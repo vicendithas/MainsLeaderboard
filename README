@@ -1,0 +1,15 @@
+1. Clone repo.
+
+	> git clone https://github.com/sk84uhlivin/MainsLeaderboard.git
+
+2. Navigate to repo.
+
+	> cd MainsLeaderboard
+	
+3. Install dependencies.
+
+	> pip install flask pandas
+
+4. Run web server.
+
+	> python3 server.py
