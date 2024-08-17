@@ -1,0 +1,86 @@
+/* Dark mode styles */
+
+/* General body styles */
+body {
+    background-color: #121212; /* Dark background */
+    color: #e0e0e0; /* Light text color */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header container */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #1e1e1e; /* Darker background for header */
+}
+
+/* Title container */
+.title-container h1 {
+    margin: 0;
+}
+
+/* Form styles */
+form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end; /* Align form items to the right */
+}
+
+form label, form input, form button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table, th, td {
+    border: 1px solid #333333; /* Dark border color */
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #0d5c9e; /* Button background color */
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #094a7a; /* Button hover color */
+}
+
+/* Content container */
+.content-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.leaderboard-container, .last10-container, .location-percentages-container {
+    width: 32%; /* Adjusted width for three sections */
+}
+
+/* List styles */
+.last10-container ul, .location-percentages-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.last10-container li, .location-percentages-container li {
+    margin-bottom: 10px;
+}
+

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinco Bingo Mains Leaderboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="header-container">
+        <div class="title-container">
+            <h1>Cinco Bingo Mains Leaderboard</h1>
+        </div>
+        <form id="entryForm">
+            <label for="pokemon">Pokemon:</label>
+            <input type="text" id="pokemon" name="pokemon" required>
+            <br>
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" required>
+            <br>
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
+            <br>
+            <button type="submit">Add Entry</button>
+        </form>
+    </div>
+
+    <div id="message"></div>
+
+    <div class="content-container">
+        <div class="section table-container">
+            <h2>Leaderboard</h2>
+            <table id="leaderboard">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Pokemon</th>
+                        <th>Count</th>
+                        <th>Last Time Ran</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section list-container">
+            <h2>Last 10 Pokemon Ran</h2>
+            <table id="last10Table">
+                <thead>
+                    <tr>
+                        <th>Pokemon</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section location-percentages-container">
+            <h2>Location Percentages</h2>
+            <table id="locationPercentages">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/static/scripts.js"></script>
+</body>
+</html>
+
