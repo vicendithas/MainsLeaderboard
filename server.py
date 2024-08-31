@@ -59,8 +59,19 @@ def leaderboard():
 @app.route('/last10')
 def last10():
     df = pd.read_csv(CSV_FILE)
-    last_10_entries = df.tail(10).iloc[::-1].reset_index(drop=True)
+
+    # Ensure the 'Date' column is treated as datetime objects for accurate sorting
+    df['Date'] = pd.to_datetime(df['Date'])
+
+    # Sort by date in descending order and select the last 10 entries
+    last_10_entries = df.sort_values(by='Date', ascending=False).head(10)
+
+    # Reset the index and format the date back to string for display
+    last_10_entries['Date'] = last_10_entries['Date'].dt.strftime('%-m/%-d/%Y')
+    last_10_entries = last_10_entries.reset_index(drop=True)
+
     return last_10_entries.to_json(orient='records')
+
 
 # Endpoint to fetch location percentages
 @app.route('/location_percentages')
