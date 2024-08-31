@@ -37,14 +37,23 @@ def add_entry():
 @app.route('/leaderboard')
 def leaderboard():
     df = pd.read_csv(CSV_FILE)
+
+    # Ensure dates are treated as datetime objects
+    df['Date'] = pd.to_datetime(df['Date'])
+
+    # Get the count of each Pokémon
     counts = df['Pokemon'].value_counts().reset_index()
     counts.columns = ['Pokemon', 'Count']
 
+    # Define a function to get the latest date for a given Pokémon
     def get_latest_date(pokemon):
-        return df[df['Pokemon'] == pokemon]['Date'].max()
+        return df[df['Pokemon'] == pokemon]['Date'].max().strftime('%-m/%-d/%Y')
 
+    # Apply the function to get the latest date for each Pokémon
     counts['Last Time Ran'] = counts['Pokemon'].apply(get_latest_date)
+
     return counts.to_json(orient='records')
+
 
 # Endpoint to fetch the last 10 Pokemon ran
 @app.route('/last10')
