@@ -38,21 +38,24 @@ def add_entry():
 def leaderboard():
     df = pd.read_csv(CSV_FILE)
 
-    # Ensure dates are treated as datetime objects
-    df['Date'] = pd.to_datetime(df['Date'])
-
-    # Get the count of each Pokémon
+    # Calculate the count of each Pokemon
     counts = df['Pokemon'].value_counts().reset_index()
     counts.columns = ['Pokemon', 'Count']
 
-    # Define a function to get the latest date for a given Pokémon
+    # Get the last time each Pokemon was run
     def get_latest_date(pokemon):
-        return df[df['Pokemon'] == pokemon]['Date'].max().strftime('%-m/%-d/%Y')
+        return pd.to_datetime(df[df['Pokemon'] == pokemon]['Date']).max()
 
-    # Apply the function to get the latest date for each Pokémon
     counts['Last Time Ran'] = counts['Pokemon'].apply(get_latest_date)
 
+    # Sort by Count descending, then by Last Time Ran ascending (oldest date first)
+    counts = counts.sort_values(by=['Count', 'Last Time Ran'], ascending=[False, True])
+
+    # Convert 'Last Time Ran' back to string for JSON serialization
+    counts['Last Time Ran'] = counts['Last Time Ran'].dt.strftime('%-m/%-d/%Y')
+
     return counts.to_json(orient='records')
+
 
 
 # Endpoint to fetch the last 10 Pokemon ran
