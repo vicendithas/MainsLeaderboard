@@ -38,6 +38,9 @@ def add_entry():
 def leaderboard():
     df = pd.read_csv(CSV_FILE)
 
+    if df.empty:
+        return jsonify([])  # Return an empty JSON response if no data
+
     # Calculate the count of each Pokemon
     counts = df['Pokemon'].value_counts().reset_index()
     counts.columns = ['Pokemon', 'Count']
@@ -51,17 +54,18 @@ def leaderboard():
     # Sort by Count descending, then by Last Time Ran ascending (oldest date first)
     counts = counts.sort_values(by=['Count', 'Last Time Ran'], ascending=[False, True])
 
-    # Convert 'Last Time Ran' back to string for JSON serialization
-    counts['Last Time Ran'] = counts['Last Time Ran'].dt.strftime('%-m/%-d/%Y')
+    # Convert 'Last Time Ran' back to string for JSON serialization, check for NaT
+    counts['Last Time Ran'] = counts['Last Time Ran'].dt.strftime('%-m/%-d/%Y').fillna('N/A')
 
     return counts.to_json(orient='records')
-
-
 
 # Endpoint to fetch the last 10 Pokemon ran
 @app.route('/last10')
 def last10():
     df = pd.read_csv(CSV_FILE)
+
+    if df.empty:
+        return jsonify([])  # Return an empty JSON response if no data
 
     # Ensure the 'Date' column is treated as datetime objects for accurate sorting
     df['Date'] = pd.to_datetime(df['Date'])
@@ -74,7 +78,6 @@ def last10():
     last_10_entries = last_10_entries.reset_index(drop=True)
 
     return last_10_entries.to_json(orient='records')
-
 
 # Endpoint to fetch location percentages
 @app.route('/location_percentages')
