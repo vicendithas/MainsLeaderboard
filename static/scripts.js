@@ -9,6 +9,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+function sanitizeFilename(name) {
+    // Convert to lowercase and replace spaces with underscores
+    return name.toLowerCase().replace(/ /g, '_');
+}
+
+function getGifPath(pokemonName) {
+    // 1/8192 chance to use the shiny GIF
+    const chance = Math.floor(Math.random() * 8192);
+    const folder = chance === 0 ? 'shiny_gifs' : 'gifs';
+    const filename = sanitizeFilename(pokemonName);
+    return `/static/${folder}/${filename}.gif`;
+}
+
 function fetchLeaderboardData() {
     fetch('/leaderboard')
         .then(response => response.json())
@@ -17,13 +30,17 @@ function fetchLeaderboardData() {
             leaderboardTable.innerHTML = '';
 
             data.forEach((row, index) => {
+                const gifPath = getGifPath(row.Pokemon);
+
                 const newRow = leaderboardTable.insertRow();
-                newRow.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${row.Pokemon}</td>
+                newRow.innerHTML = 
+                    `<td>${index + 1}</td>
+                    <td>
+                        <img src="${gifPath}" alt="${row.Pokemon}" class="pokemon-gif">
+                        ${row.Pokemon}
+                    </td>
                     <td>${row.Count}</td>
-                    <td>${row['Last Time Ran']}</td>
-                `;
+                    <td>${row['Last Time Ran']}</td>`;
             });
         })
         .catch(error => {
@@ -39,11 +56,15 @@ function fetchLast10Pokemon() {
             last10Table.innerHTML = '';
 
             data.forEach(entry => {
+                const gifPath = getGifPath(entry.Pokemon);
+
                 const newRow = last10Table.insertRow();
-                newRow.innerHTML = `
-                    <td>${entry.Pokemon}</td>
-                    <td>${entry.Date}</td>
-                `;
+                newRow.innerHTML = 
+                    `<td>
+                        <img src="${gifPath}" alt="${entry.Pokemon}" class="pokemon-gif">
+                        ${entry.Pokemon}
+                    </td>
+                    <td>${entry.Date}</td>`;
             });
         })
         .catch(error => {
@@ -60,10 +81,9 @@ function fetchLocationPercentages() {
 
             data.forEach(entry => {
                 const newRow = locationPercentagesTable.insertRow();
-                newRow.innerHTML = `
-                    <td>${entry.Location}</td>
-                    <td>${entry.Percentage.toFixed(2)}%</td>
-                `;
+                newRow.innerHTML = 
+                    `<td>${entry.Location}</td>
+                    <td>${entry.Percentage.toFixed(2)}%</td>`;
             });
         })
         .catch(error => {

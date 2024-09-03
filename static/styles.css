@@ -84,3 +84,11 @@ button:hover {
     margin-bottom: 10px;
 }
 
+/* Additional CSS for Pokémon GIFs */
+.pokemon-gif {
+    width: 50px;  /* Adjust as needed */
+    height: 50px; /* Adjust as needed */
+    vertical-align: middle;
+    margin-right: 10px; /* Space between image and text */
+}
+
