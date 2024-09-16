@@ -8,7 +8,7 @@
 	
 3. Install dependencies.
 
-	> pip install flask pandas
+	> pip install flask pandas waitress
 
 4. Run web server.
 
