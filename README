@@ -13,3 +13,9 @@
 4. Run web server.
 
 	> python3 server.py
+
+When you want to grab new changes (your data will be saved):
+
+5. Update
+
+	> git pull origin main
