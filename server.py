@@ -101,5 +101,19 @@ def total_pokemon():
     return jsonify({'total_pokemon': total_entries})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)  # Debugging is still enabled
+    # Retrieve primary IP address
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("10.255.255.255", 1))
+    ip = (s.getsockname()[0])
+    s.close()
+    print("MainsLeaderboard is running at:")
+    print() 
+    print("http://127.0.0.1:8080")
+    print(f"http://{ip}:8080")
+    
+    # Deploy web server
+    #app.run(host='0.0.0.0', debug=True) # Development
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=8080, threads=100) # Production
 
