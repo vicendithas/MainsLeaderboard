@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+    fetchTotalPokemon(); // Fetch total Pokemon count on page load
     fetchLeaderboardData();
     fetchLast10Pokemon();
     fetchLocationPercentages();
@@ -21,6 +22,21 @@ function getGifPath(pokemonName) {
     const filename = sanitizeFilename(pokemonName);
     return `/static/${folder}/${filename}.gif`;
 }
+
+function fetchTotalPokemon() {
+    fetch('/total_pokemon')
+        .then(response => response.json())
+        .then(data => {
+            const totalEntriesDiv = document.getElementById('totalEntries');
+            totalEntriesDiv.textContent = `Total Pokemon: ${data.total_pokemon}`;
+        })
+        .catch(error => {
+            console.error('Error fetching total Pokemon data:', error);
+            document.getElementById('totalEntries').textContent = 'Total Pokemon: Error loading data.';
+        });
+}
+
+// Existing functions...
 
 function fetchLeaderboardData() {
     fetch('/leaderboard')
@@ -101,6 +117,7 @@ function addEntry() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            fetchTotalPokemon(); // Update the total Pokemon count
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();

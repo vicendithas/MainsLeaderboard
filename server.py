@@ -92,6 +92,13 @@ def location_percentages():
     location_df.columns = ['Location', 'Percentage']
 
     return location_df.to_json(orient='records')
+    
+# Endpoint to fetch the total number of Pokémon entries
+@app.route('/total_pokemon')
+def total_pokemon():
+    df = pd.read_csv(CSV_FILE)
+    total_entries = len(df)
+    return jsonify({'total_pokemon': total_entries})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)  # Debugging is still enabled
