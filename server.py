@@ -111,6 +111,7 @@ if __name__ == '__main__':
     print() 
     print("http://127.0.0.1:8080")
     print(f"http://{ip}:8080")
+    print()
     
     # Deploy web server
     #app.run(host='0.0.0.0', debug=True) # Development
