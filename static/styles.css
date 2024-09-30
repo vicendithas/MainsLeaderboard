@@ -92,3 +92,20 @@ button:hover {
     margin-right: 10px; /* Space between image and text */
 }
 
+/* CSS for sorting arrow */
+.sort-arrow {
+    font-size: 0.8em;
+    margin-left: 5px;
+    visibility: hidden; /* Initially hidden */
+}
+
+.sort-arrow.up::before {
+    content: '▲'; /* Up arrow */
+    visibility: visible; /* Show the arrow */
+}
+
+.sort-arrow.down::before {
+    content: '▼'; /* Down arrow */
+    visibility: visible; /* Show the arrow */
+}
+

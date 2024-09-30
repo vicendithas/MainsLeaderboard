@@ -133,3 +133,50 @@ function addEntry() {
     });
 }
 
+let sortOrder = [true, true, true, true]; // Track sort order for each column (true = ascending)
+
+function sortTable(columnIndex) {
+    const table = document.getElementById('leaderboard');
+    const tbody = table.getElementsByTagName('tbody')[0];
+    const rows = Array.from(tbody.getElementsByTagName('tr'));
+
+    // Determine the sort direction
+    sortOrder[columnIndex] = !sortOrder[columnIndex];
+
+    // Clear existing arrows
+    const arrows = ['rankArrow', 'pokemonArrow', 'countArrow', 'lastTimeRanArrow'];
+    arrows.forEach((id, index) => {
+        const arrow = document.getElementById(id);
+        arrow.classList.remove('up', 'down');
+        arrow.style.visibility = 'hidden'; // Hide all arrows
+    });
+
+    // Sort rows based on the specified column index
+    rows.sort((a, b) => {
+        const aText = a.cells[columnIndex].textContent.trim();
+        const bText = b.cells[columnIndex].textContent.trim();
+
+        // Handle different column types
+        if (columnIndex === 0) { // Rank (numeric sort)
+            return sortOrder[columnIndex] ? parseInt(aText) - parseInt(bText) : parseInt(bText) - parseInt(aText);
+        } else if (columnIndex === 2) { // Count (numeric sort)
+            return sortOrder[columnIndex] ? aText - bText : bText - aText;
+        } else if (columnIndex === 3) { // Last Time Ran (date sort)
+            const aDate = new Date(aText);
+            const bDate = new Date(bText);
+            return sortOrder[columnIndex] ? aDate - bDate : bDate - aDate;
+        } else { // Alphabetical sort for Pokemon name
+            return sortOrder[columnIndex] ? aText.localeCompare(bText) : bText.localeCompare(aText);
+        }
+    });
+
+    // Update the arrow for the sorted column
+    const arrow = document.getElementById(arrows[columnIndex]);
+    arrow.style.visibility = 'visible'; // Show the arrow
+    arrow.classList.add(sortOrder[columnIndex] ? 'up' : 'down');
+
+    // Remove existing rows and append sorted rows
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+}
+

@@ -35,10 +35,11 @@
             <table id="leaderboard">
                 <thead>
                     <tr>
-                        <th>Rank</th>
-                        <th>Pokemon</th>
-                        <th>Count</th>
-                        <th>Last Time Ran</th>
+                        <th onclick="sortTable(0)">Rank <span class="sort-arrow" id="rankArrow"></span></th>
+			<th onclick="sortTable(1)">Pokemon <span class="sort-arrow" id="pokemonArrow"></span></th>
+			<th onclick="sortTable(2)">Count <span class="sort-arrow" id="countArrow"></span></th>
+			<th onclick="sortTable(3)">Last Time Ran <span class="sort-arrow" id="lastTimeRanArrow"></span></th>
+
                     </tr>
                 </thead>
                 <tbody>
