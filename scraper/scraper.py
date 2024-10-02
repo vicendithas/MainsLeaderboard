@@ -28,10 +28,7 @@ def check_file_sav(file_path):
         checksum &= 65535  # Keep it within 16 bits
 
     # Check if the calculated checksum matches the stored one
-    if checksum == stored_checksum:
-    	return True
-    else:
-    	return False	
+    return checksum == stored_checksum    
 
 def read_memory_address(file_path, address):
     with open(file_path, 'rb') as file:
@@ -67,15 +64,25 @@ def get_creation_date(file_path):
     # Convert the timestamp to the 'm/dd/yyyy' format
     return time.strftime("%m/%d/%Y", time.localtime(creation_time))
 
+def get_caught_level(file_path, address):
+    hex_value, decimal_value = read_memory_address(file_path, address)
+    
+    # Extract the last 6 bits of the byte (mask with 0b00111111 or 63 in decimal)
+    caught_level = decimal_value & 63
+    
+    return caught_level
+
 if __name__ == "__main__":
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Process .sav files and extract Pokémon data.")
     parser.add_argument("-l", "--level", action="store_true", help="Include Pokémon level in output")
     parser.add_argument("-n", "--name", action="store_true", help="Include filename in output")
     parser.add_argument("-f", "--format", action="store_true", help="Include format (Bingo or FIR) in output")
+    parser.add_argument("-cl", "--caught-level", action="store_true", help="Include caught level in output")
     
-    FIR_addresses = (0x00001A67, 0x00001A8C, 0x00001A8D)
-    Bingo_addresses = (0x00001A66, 0x00001A8B, 0x00001A8C)
+    # Update addresses to include caught level addresses
+    FIR_addresses = (0x00001A67, 0x00001A8C, 0x00001A8D, 0x0000288B)  # FIR caught level address
+    Bingo_addresses = (0x00001A66, 0x00001A8B, 0x00001A8C, 0x0000288A)  # Bingo caught level address
     
     args = parser.parse_args()
 
@@ -97,18 +104,12 @@ if __name__ == "__main__":
             isBingo = check_file_sav(file_path)
             
             # Read Pokemon information
-            if isBingo:
-                address = Bingo_addresses[0]
-            else:
-                address = FIR_addresses[0]    
+            address = Bingo_addresses[0] if isBingo else FIR_addresses[0]
             hex_value, decimal_value = read_memory_address(file_path, address)
             pokemon = pokedex.pokedex.get(decimal_value)
             
             # Read Location information
-            if isBingo:
-                address = Bingo_addresses[1]
-            else:
-                address = FIR_addresses[1]
+            address = Bingo_addresses[1] if isBingo else FIR_addresses[1]
             hex_value, decimal_value = read_memory_address(file_path, address)
             location = locations.locations.get(decimal_value)
             
@@ -118,10 +119,7 @@ if __name__ == "__main__":
             # If the -l flag is provided, include the level
             if args.level:
                 # Read Level information
-                if isBingo:
-                    address = Bingo_addresses[2]
-                else:
-                    address = FIR_addresses[2]
+                address = Bingo_addresses[2] if isBingo else FIR_addresses[2]
                 hex_value, decimal_value = read_memory_address(file_path, address)
                 level = decimal_value
                 
@@ -138,6 +136,12 @@ if __name__ == "__main__":
             if args.format:
                 format_type = "Bingo" if isBingo else "FIR"
                 ran_pokemon += f",{format_type}"
+
+            # If the -cl flag is provided, include the caught level
+            if args.caught_level:
+                address = Bingo_addresses[3] if isBingo else FIR_addresses[3]  # Use the new caught level address
+                caught_level = get_caught_level(file_path, address)
+                ran_pokemon += f",{caught_level}"
             
             # Add a newline and append to the sheet
             ran_pokemon += "\n"
