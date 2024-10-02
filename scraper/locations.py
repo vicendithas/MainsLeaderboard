@@ -1,4 +1,5 @@
 locations = {
+    126: "Trade"
     129: "New Bark Town",
     130: "Route 29",
     131: "Cherrygrove City",
@@ -94,5 +95,6 @@ locations = {
     221: "Tohjo Falls",
     222: "Route 28",
     223: "Fast Ship"
+    254: "Trade"
 }
 
