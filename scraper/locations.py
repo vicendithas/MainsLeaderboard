@@ -94,7 +94,7 @@ locations = {
     220: "Route 27",
     221: "Tohjo Falls",
     222: "Route 28",
-    223: "Fast Ship"
+    223: "Fast Ship",
     254: "Trade"
 }
 
