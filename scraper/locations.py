@@ -1,5 +1,5 @@
 locations = {
-    126: "Trade"
+    126: "Trade",
     129: "New Bark Town",
     130: "Route 29",
     131: "Cherrygrove City",
