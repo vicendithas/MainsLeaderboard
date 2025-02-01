@@ -28,7 +28,7 @@ jobs:
           # e.g., at .\bin\my-app.exe
           
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mains-leaderboard
           path: dist/server.exe  # adjust if your exe is in a different location
