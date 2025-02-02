@@ -3,6 +3,8 @@
 
 MainsLeaderboard is a program designed to keep track of which Pokemon has been used playing Pokemon over time. It simply keeps track of the Pokemon, where you obtained it, and what date you caught it, and displays basic statistics. These include an overall leaderboard organized by the amount of times ran (by default), the last 10 Pokemon that were ran, and the spread of where you found the Pokemon.
 
+![Leaderboard Example](https://raw.githubusercontent.com/sk84uhlivin/MainsLeaderboard/refs/heads/main/leaderboard.png)
+
 
 # Installation
 
