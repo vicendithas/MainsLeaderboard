@@ -51,7 +51,7 @@ def read_memory_address(file_path, address):
 def get_creation_date(file_path):
     try:
         # Get the file creation time (Windows and some Unix systems)
-        creation_time = os.path.getctime(file_path)
+        creation_time = os.path.getmtime(file_path)
     except AttributeError:
         # If the system doesn't support getctime, try the birthtime from os.stat()
         stat_info = os.stat(file_path)
