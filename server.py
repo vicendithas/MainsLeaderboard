@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 import re
 from datetime import datetime
@@ -35,10 +36,24 @@ def write_csv(rows):
         writer.writerows(rows)
 
 
+# Load config
+CONFIG_FILE = "config.json"
+DEFAULT_CONFIG = {"title": "Cinco Bingo Mains Leaderboard", "port": 8080}
+if os.path.exists(CONFIG_FILE):
+    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+        config = json.load(f)
+else:
+    config = DEFAULT_CONFIG
+
+
 # Serve index.html from the /static directory
 @app.route("/")
 def index():
-    return app.send_static_file("index.html")
+    # Inject the title from config into index.html
+    with open(os.path.join(app.static_folder, "index.html"), "r", encoding="utf-8") as f:
+        html = f.read()
+    html = html.replace("<title>Cinco Bingo Mains Leaderboard</title>", f"<title>{config['title']}</title>")
+    return html
 
 
 # Endpoint to add a new entry
@@ -212,11 +227,11 @@ if __name__ == "__main__":
     s.close()
     print("MainsLeaderboard is running at:")
     print()
-    print(f"http://{ip}:8080" + " | This link is accessible anywhere on your network")
-    print("http://127.0.0.1:8080" + " | This link is only accessible from your local machine")
+    print(f"http://{ip}:{config['port']}" + " | This link is accessible anywhere on your network")
+    print(f"http://127.0.0.1:{config['port']}" + " | This link is only accessible from your local machine")
     print()
 
     # Deploy web server
     from waitress import serve
 
-    serve(app, host="0.0.0.0", port=8080, threads=100)
+    serve(app, host="0.0.0.0", port=config["port"], threads=100)
