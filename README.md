@@ -40,7 +40,7 @@ You can edit the config.json file to change the leaderboard header and the port.
 
 ## Executable
 
-Download, and extract the latest release from [HERE](https://github.com/sk84uhlivin/MainsLeaderboard/releases). Then, move the `pokemon_usage.csv` file, that's located in the same directory as the previous version, to the location of the latest version. Alternatively, delete the previous executable, and replace it with the new executable.
+Download, and extract the latest release from [HERE](https://github.com/sk84uhlivin/MainsLeaderboard/releases). Then, move the `pokemon_usage.csv` file, that's located in the same directory as the previous version, to the location of the latest version.
 
 ## Source
 
