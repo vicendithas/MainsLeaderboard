@@ -5,9 +5,9 @@ import os
 import re
 from datetime import datetime
 
-from flask import Flask, jsonify, request
+from flask import Flask, render_template, request, jsonify
 
-app = Flask(__name__, static_folder="static")
+app = Flask(__name__, static_folder="static", template_folder="static/templates")
 
 # Path to the CSV file
 CSV_FILE = "pokemon_usage.csv"
@@ -50,11 +50,7 @@ else:
 # Serve index.html from the /static directory
 @app.route("/")
 def index():
-    # Inject the title from config into index.html
-    with open(os.path.join(app.static_folder, "index.html"), "r", encoding="utf-8") as f:
-        html = f.read()
-    html = html.replace("<title>Cinco Bingo Mains Leaderboard</title>", f"<title>{config['title']}</title>")
-    return html
+    return render_template("index.html.j2", title=config["title"])
 
 
 # Endpoint to add a new entry

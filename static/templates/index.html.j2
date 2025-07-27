@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cinco Bingo Mains Leaderboard</title>
+    <title>MainsLeaderboard</title>
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="header-container">
         <div class="title-container">
-            <h1>Cinco Bingo Mains Leaderboard</h1>
+            <h1>{{ title }}</h1>
             <div id="totalEntries">Total Pokemon: Loading...</div> <!-- Updated section for total Pokémon -->
         </div>
         <form id="entryForm">
@@ -36,10 +36,9 @@
                 <thead>
                     <tr>
                         <th onclick="sortTable(0)">Rank <span class="sort-arrow" id="rankArrow"></span></th>
-			<th onclick="sortTable(1)">Pokemon <span class="sort-arrow" id="pokemonArrow"></span></th>
-			<th onclick="sortTable(2)">Count <span class="sort-arrow" id="countArrow"></span></th>
-			<th onclick="sortTable(3)">Last Time Ran <span class="sort-arrow" id="lastTimeRanArrow"></span></th>
-
+			            <th onclick="sortTable(1)">Pokemon <span class="sort-arrow" id="pokemonArrow"></span></th>
+			            <th onclick="sortTable(2)">Count <span class="sort-arrow" id="countArrow"></span></th>
+			            <th onclick="sortTable(3)">Last Time Ran <span class="sort-arrow" id="lastTimeRanArrow"></span></th>
                     </tr>
                 </thead>
                 <tbody>
