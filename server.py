@@ -212,8 +212,8 @@ if __name__ == "__main__":
     s.close()
     print("MainsLeaderboard is running at:")
     print()
-    print("http://127.0.0.1:8080")
-    print(f"http://{ip}:8080")
+    print(f"http://{ip}:8080" + " | This link is accessible anywhere on your network")
+    print("http://127.0.0.1:8080" + " | This link is only accessible from your local machine")
     print()
 
     # Deploy web server
