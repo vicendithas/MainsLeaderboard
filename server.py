@@ -5,7 +5,7 @@ import os
 import re
 from datetime import datetime
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 
 app = Flask(__name__, static_folder="static", template_folder="static/templates")
 
@@ -218,6 +218,38 @@ def total_pokemon():
 def get_config():
     # Only return the shiny_odds field for the frontend
     return jsonify({"shiny_odds": config.get("shiny_odds", 8192)})
+
+
+@app.route("/last_pokemon")
+def last_pokemon():
+    rows = read_csv()
+    if not rows:
+        # No entries, return 404
+        return "", 404
+
+    # Get the most recent entry by date
+    for row in rows:
+        try:
+            row["_date_dt"] = datetime.strptime(row["Date"], "%m/%d/%Y")
+        except ValueError:
+            row["_date_dt"] = datetime.min
+
+    rows.sort(key=lambda x: x["_date_dt"], reverse=True)
+    last = rows[0]
+    pokemon_name = last["Pokemon"]
+    gif_filename = sanitize_filename(pokemon_name) + ".gif"
+    gif_folder = os.path.join(app.static_folder, "gifs")
+
+    # If the GIF doesn't exist, return 404
+    if not os.path.exists(os.path.join(gif_folder, gif_filename)):
+        return "", 404
+
+    return send_from_directory(gif_folder, gif_filename)
+
+
+def sanitize_filename(name):
+    # Convert to lowercase and replace spaces with underscores
+    return name.lower().replace(" ", "_")
 
 
 if __name__ == "__main__":
