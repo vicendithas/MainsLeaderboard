@@ -157,14 +157,16 @@ def last10():
     if not rows:
         return jsonify([])
 
-    # Parse the dates, sort descending
-    for row in rows:
+    # Attach index to each row for stable sorting
+    for idx, row in enumerate(rows):
         try:
             row["_date_dt"] = datetime.strptime(row["Date"], "%m/%d/%Y")
         except ValueError:
             row["_date_dt"] = datetime.min
+        row["_csv_idx"] = idx
 
-    rows.sort(key=lambda x: x["_date_dt"], reverse=True)
+    # Sort by date descending, then by CSV index descending (later rows first)
+    rows.sort(key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
 
     # Take the first 10
     last_10 = rows[:10]
@@ -175,7 +177,7 @@ def last10():
         date_str = re.sub(r"\b0(\d)", r"\1", date_str)
         row["Date"] = date_str
         row.pop("_date_dt", None)
-        # Location is already present in row
+        row.pop("_csv_idx", None)
 
     return jsonify(last_10)
 
