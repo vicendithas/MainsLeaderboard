@@ -31,6 +31,10 @@ Install the required dependencies. Use a virtual environment if you wish:
 
 Double click the executable, or run `python3 server.py` if running from source, and navigate to one of the IP addresses shown in the terminal.
 
+## Configure
+
+You can edit the config.json file to change the leaderboard header and the port. If you want to run multiple leaderboards, you should change the second leaderboard's port (ex. 8081).
+
 
 # Update
 
