@@ -327,6 +327,38 @@ def current_streak():
     return jsonify({"current_streak": streak})
 
 
+@app.route("/longest_streak")
+def longest_streak():
+    rows = read_csv()
+    if not rows:
+        return jsonify({"longest_streak": 0})
+
+    # Get all unique dates from the CSV
+    date_set = set()
+    for row in rows:
+        try:
+            dt = datetime.strptime(row["Date"], "%m/%d/%Y")
+            date_set.add(dt.date())
+        except ValueError:
+            continue
+
+    if not date_set:
+        return jsonify({"longest_streak": 0})
+
+    sorted_dates = sorted(date_set)
+    longest = 1
+    current = 1
+
+    for i in range(1, len(sorted_dates)):
+        if (sorted_dates[i] - sorted_dates[i-1]).days == 1:
+            current += 1
+            longest = max(longest, current)
+        else:
+            current = 1
+
+    return jsonify({"longest_streak": longest})
+
+
 def sanitize_filename(name):
     # Convert to lowercase and replace spaces with underscores
     return name.lower().replace(" ", "_")

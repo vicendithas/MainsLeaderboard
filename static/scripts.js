@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchLast10Pokemon();
             fetchLocationPercentages();
             fetchCurrentStreak(); // <-- Updated line
+            fetchLongestStreak(); // <-- Added line
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchLast10Pokemon();
             fetchLocationPercentages();
             fetchCurrentStreak(); // <-- Updated line
+            fetchLongestStreak(); // <-- Added line
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -167,6 +169,19 @@ function fetchCurrentStreak() {
         });
 }
 
+function fetchLongestStreak() {
+    fetch('/longest_streak')
+        .then(response => response.json())
+        .then(data => {
+            const longestStreakDiv = document.getElementById('longestStreak');
+            longestStreakDiv.textContent = `Longest Streak: ${data.longest_streak} day${data.longest_streak === 1 ? '' : 's'}`;
+        })
+        .catch(error => {
+            console.error('Error fetching longest streak:', error);
+            document.getElementById('longestStreak').textContent = 'Longest Streak: Error loading data.';
+        });
+}
+
 function addEntry() {
     const formData = new FormData(document.getElementById('entryForm'));
 
@@ -182,6 +197,7 @@ function addEntry() {
             fetchLast10Pokemon();
             fetchLocationPercentages();
             fetchCurrentStreak(); // <-- Updated line
+            fetchLongestStreak(); // <-- Added line
             document.getElementById('entryForm').reset();
             document.getElementById('message').textContent = 'Entry added successfully.';
         } else {
