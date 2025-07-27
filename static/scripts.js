@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
+            fetchCurrentStreak(); // <-- Updated line
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
+            fetchCurrentStreak(); // <-- Updated line
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -152,6 +154,19 @@ function fetchLocationPercentages() {
         });
 }
 
+function fetchCurrentStreak() {
+    fetch('/current_streak')
+        .then(response => response.json())
+        .then(data => {
+            const streakDiv = document.getElementById('currentStreak');
+            streakDiv.textContent = `Current Streak: ${data.current_streak} day${data.current_streak === 1 ? '' : 's'}`;
+        })
+        .catch(error => {
+            console.error('Error fetching current streak:', error);
+            document.getElementById('currentStreak').textContent = 'Current Streak: Error loading data.';
+        });
+}
+
 function addEntry() {
     const formData = new FormData(document.getElementById('entryForm'));
 
@@ -166,6 +181,7 @@ function addEntry() {
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
+            fetchCurrentStreak(); // <-- Updated line
             document.getElementById('entryForm').reset();
             document.getElementById('message').textContent = 'Entry added successfully.';
         } else {

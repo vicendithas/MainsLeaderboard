@@ -249,6 +249,84 @@ def last_pokemon():
     return send_from_directory(gif_folder, gif_filename)
 
 
+@app.route("/play_streak")
+def play_streak():
+    rows = read_csv()
+    if not rows:
+        return jsonify({"play_streak": 0})
+
+    # Get all unique dates from the CSV
+    date_set = set()
+    for row in rows:
+        try:
+            dt = datetime.strptime(row["Date"], "%m/%d/%Y")
+            date_set.add(dt.date())
+        except ValueError:
+            continue
+
+    if not date_set:
+        return jsonify({"play_streak": 0})
+
+    today = datetime.now().date()
+    sorted_dates = sorted(date_set, reverse=True)
+
+    # If the most recent entry is not today or yesterday, streak is 0
+    if (today not in date_set) and ((today - sorted_dates[0]).days > 1):
+        return jsonify({"play_streak": 0})
+
+    # Start from the most recent date, count consecutive days
+    streak = 1
+    for i in range(1, len(sorted_dates)):
+        if (sorted_dates[i-1] - sorted_dates[i]).days == 1:
+            streak += 1
+        else:
+            break
+
+    # If today is not in the streak, don't count today yet
+    if today not in date_set:
+        pass  # streak remains as is
+    return jsonify({"play_streak": streak})
+
+
+@app.route("/current_streak")
+def current_streak():
+    rows = read_csv()
+    if not rows:
+        return jsonify({"current_streak": 0})
+
+    # Get all unique dates from the CSV
+    date_set = set()
+    for row in rows:
+        try:
+            dt = datetime.strptime(row["Date"], "%m/%d/%Y")
+            date_set.add(dt.date())
+        except ValueError:
+            continue
+
+    if not date_set:
+        return jsonify({"current_streak": 0})
+
+    today = datetime.now().date()
+    sorted_dates = sorted(date_set, reverse=True)
+
+    # If the most recent entry is not today or yesterday, streak is 0
+    if (today not in date_set) and ((today - sorted_dates[0]).days > 1):
+        return jsonify({"current_streak": 0})
+
+    # Start from the most recent date, count consecutive days
+    streak = 1
+    for i in range(1, len(sorted_dates)):
+        if (sorted_dates[i-1] - sorted_dates[i]).days == 1:
+            streak += 1
+        else:
+            break
+
+    # If today is not in the streak, don't count today yet
+    if today not in date_set:
+        pass  # streak remains as is
+    return jsonify({"current_streak": streak})
+
+
 def sanitize_filename(name):
     # Convert to lowercase and replace spaces with underscores
     return name.lower().replace(" ", "_")
