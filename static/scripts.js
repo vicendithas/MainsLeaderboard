@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // 1/8192 chance to use shiny GIFs for all
+    useShinyGifs = Math.floor(Math.random() * 3) === 0;
+
     fetchTotalPokemon(); // Fetch total Pokemon count on page load
     fetchLeaderboardData();
     fetchLast10Pokemon();
@@ -15,10 +18,10 @@ function sanitizeFilename(name) {
     return name.toLowerCase().replace(/ /g, '_');
 }
 
+let useShinyGifs = false;
+
 function getGifPath(pokemonName) {
-    // 1/8192 chance to use the shiny GIF
-    const chance = Math.floor(Math.random() * 8192);
-    const folder = chance === 0 ? 'shiny_gifs' : 'gifs';
+    const folder = useShinyGifs ? 'shiny_gifs' : 'gifs';
     const filename = sanitizeFilename(pokemonName);
     return `/static/${folder}/${filename}.gif`;
 }
