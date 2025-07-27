@@ -331,7 +331,7 @@ def current_streak():
 def longest_streak():
     rows = read_csv()
     if not rows:
-        return jsonify({"longest_streak": 0})
+        return jsonify({"longest_streak": 0, "start_date": None, "end_date": None})
 
     # Get all unique dates from the CSV
     date_set = set()
@@ -343,20 +343,40 @@ def longest_streak():
             continue
 
     if not date_set:
-        return jsonify({"longest_streak": 0})
+        return jsonify({"longest_streak": 0, "start_date": None, "end_date": None})
 
     sorted_dates = sorted(date_set)
     longest = 1
     current = 1
+    streak_start = sorted_dates[0]
+    streak_end = sorted_dates[0]
+    longest_start = sorted_dates[0]
+    longest_end = sorted_dates[0]
 
     for i in range(1, len(sorted_dates)):
         if (sorted_dates[i] - sorted_dates[i-1]).days == 1:
             current += 1
-            longest = max(longest, current)
+            streak_end = sorted_dates[i]
+            if current > longest:
+                longest = current
+                longest_start = streak_start
+                longest_end = streak_end
         else:
             current = 1
+            streak_start = sorted_dates[i]
+            streak_end = sorted_dates[i]
 
-    return jsonify({"longest_streak": longest})
+    # Format dates as M/D/YYYY
+    start_str = longest_start.strftime("%m/%d/%Y")
+    start_str = re.sub(r"\b0(\d)", r"\1", start_str)
+    end_str = longest_end.strftime("%m/%d/%Y")
+    end_str = re.sub(r"\b0(\d)", r"\1", end_str)
+
+    return jsonify({
+        "longest_streak": longest,
+        "start_date": start_str,
+        "end_date": end_str
+    })
 
 
 def sanitize_filename(name):

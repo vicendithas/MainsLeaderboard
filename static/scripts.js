@@ -174,7 +174,11 @@ function fetchLongestStreak() {
         .then(response => response.json())
         .then(data => {
             const longestStreakDiv = document.getElementById('longestStreak');
-            longestStreakDiv.textContent = `Longest Streak: ${data.longest_streak} day${data.longest_streak === 1 ? '' : 's'}`;
+            let streakText = `Longest Streak: ${data.longest_streak} day${data.longest_streak === 1 ? '' : 's'}`;
+            if (data.start_date && data.end_date) {
+                streakText += ` (${data.start_date} - ${data.end_date})`;
+            }
+            longestStreakDiv.textContent = streakText;
         })
         .catch(error => {
             console.error('Error fetching longest streak:', error);
