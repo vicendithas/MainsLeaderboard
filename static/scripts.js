@@ -1,7 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 1/8192 chance to use shiny GIFs for all
-    useShinyGifs = Math.floor(Math.random() * 3) === 0;
-
     fetchTotalPokemon(); // Fetch total Pokemon count on page load
     fetchLeaderboardData();
     fetchLast10Pokemon();
@@ -18,12 +15,38 @@ function sanitizeFilename(name) {
     return name.toLowerCase().replace(/ /g, '_');
 }
 
-let useShinyGifs = false;
-
-function getGifPath(pokemonName) {
-    const folder = useShinyGifs ? 'shiny_gifs' : 'gifs';
+function getGifPath(pokemonName, shinyCheckCallback) {
+    // 1/8192 chance for this GIF to be shiny
+    const isShiny = Math.floor(Math.random() * 8192) === 0;
+    if (isShiny && typeof shinyCheckCallback === 'function') {
+        shinyCheckCallback();
+    }
+    const folder = isShiny ? 'shiny_gifs' : 'gifs';
     const filename = sanitizeFilename(pokemonName);
     return `/static/${folder}/${filename}.gif`;
+}
+
+let shinyMessageShown = false;
+
+function showShinyMessageAndAudio() {
+    if (!shinyMessageShown) {
+        shinyMessageShown = true;
+        const messageElem = document.getElementById('message');
+        if (messageElem) {
+            messageElem.textContent = '✨ A shiny Pokémon appeared! ✨';
+        }
+        const audio = new Audio('/static/shiny.mp3');
+        audio.play().catch(() => {
+            if (messageElem) {
+                messageElem.textContent += ' (Click anywhere to hear the shiny sound!)';
+            }
+            const playShinyAudio = () => {
+                audio.play();
+                document.removeEventListener('click', playShinyAudio);
+            };
+            document.addEventListener('click', playShinyAudio);
+        });
+    }
 }
 
 function fetchTotalPokemon() {
@@ -39,8 +62,6 @@ function fetchTotalPokemon() {
         });
 }
 
-// Existing functions...
-
 function fetchLeaderboardData() {
     fetch('/leaderboard')
         .then(response => response.json())
@@ -49,7 +70,7 @@ function fetchLeaderboardData() {
             leaderboardTable.innerHTML = '';
 
             data.forEach((row, index) => {
-                const gifPath = getGifPath(row.Pokemon);
+                const gifPath = getGifPath(row.Pokemon, showShinyMessageAndAudio);
 
                 const newRow = leaderboardTable.insertRow();
                 newRow.innerHTML = 
@@ -75,7 +96,7 @@ function fetchLast10Pokemon() {
             last10Table.innerHTML = '';
 
             data.forEach(entry => {
-                const gifPath = getGifPath(entry.Pokemon);
+                const gifPath = getGifPath(entry.Pokemon, showShinyMessageAndAudio);
 
                 const newRow = last10Table.insertRow();
                 newRow.innerHTML = 
