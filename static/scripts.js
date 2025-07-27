@@ -1,13 +1,33 @@
-document.addEventListener('DOMContentLoaded', function() {
-    fetchTotalPokemon(); // Fetch total Pokemon count on page load
-    fetchLeaderboardData();
-    fetchLast10Pokemon();
-    fetchLocationPercentages();
+let shinyOdds = 8192; // Default value
 
-    document.getElementById('entryForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        addEntry();
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch shiny odds from config
+    fetch('/config')
+        .then(response => response.json())
+        .then(cfg => {
+            shinyOdds = cfg.shiny_odds || 8192;
+            fetchTotalPokemon();
+            fetchLeaderboardData();
+            fetchLast10Pokemon();
+            fetchLocationPercentages();
+
+            document.getElementById('entryForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                addEntry();
+            });
+        })
+        .catch(() => {
+            // If config fetch fails, use default odds
+            fetchTotalPokemon();
+            fetchLeaderboardData();
+            fetchLast10Pokemon();
+            fetchLocationPercentages();
+
+            document.getElementById('entryForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                addEntry();
+            });
+        });
 });
 
 function sanitizeFilename(name) {
@@ -16,8 +36,8 @@ function sanitizeFilename(name) {
 }
 
 function getGifPath(pokemonName, shinyCheckCallback) {
-    // 1/8192 chance for this GIF to be shiny
-    const isShiny = Math.floor(Math.random() * 8192) === 0;
+    // Use shinyOdds from config
+    const isShiny = Math.floor(Math.random() * shinyOdds) === 0;
     if (isShiny && typeof shinyCheckCallback === 'function') {
         shinyCheckCallback();
     }

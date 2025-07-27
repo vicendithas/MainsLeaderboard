@@ -214,6 +214,12 @@ def total_pokemon():
     return jsonify({"total_pokemon": len(rows)})
 
 
+@app.route("/config")
+def get_config():
+    # Only return the shiny_odds field for the frontend
+    return jsonify({"shiny_odds": config.get("shiny_odds", 8192)})
+
+
 if __name__ == "__main__":
     # Retrieve primary IP address
     import socket

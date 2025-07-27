@@ -1,4 +1,5 @@
 {
     "title": "Mains Leaderboard",
-    "port": 8080
+    "port": 8080,
+    "shiny_odds": 8192
 }
