@@ -80,7 +80,8 @@ function fetchLast10Pokemon() {
                         <img src="${gifPath}" alt="${entry.Pokemon}" class="pokemon-gif">
                         ${entry.Pokemon}
                     </td>
-                    <td>${entry.Date}</td>`;
+                    <td>${entry.Date}</td>
+                    <td>${entry.Location}</td>`;
             });
         })
         .catch(error => {

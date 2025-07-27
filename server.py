@@ -171,11 +171,11 @@ def last10():
 
     # Clean up for JSON response
     for row in last_10:
-        # Return the original Date format or reformat it if needed
         date_str = row["_date_dt"].strftime("%m/%d/%Y")
         date_str = re.sub(r"\b0(\d)", r"\1", date_str)
         row["Date"] = date_str
         row.pop("_date_dt", None)
+        # Location is already present in row
 
     return jsonify(last_10)
 
