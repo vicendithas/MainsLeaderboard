@@ -35,6 +35,8 @@ Double click the executable, or run `python3 server.py` if running from source, 
 
 You can edit the config.json file to change the leaderboard header and the port. If you want to run multiple leaderboards, you should change the second leaderboard's port (ex. 8081).
 
+Each time a GIF is loaded onto the page, it has a (by default) 1/8192 chance of being shiny. If this happens, you'll get a message on the page that "A shiny Pokémon appeared". If you want to change these odds, they can be changed in the config.json file.
+
 
 # Update
 
