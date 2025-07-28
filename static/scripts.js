@@ -1,13 +1,37 @@
-document.addEventListener('DOMContentLoaded', function() {
-    fetchTotalPokemon(); // Fetch total Pokemon count on page load
-    fetchLeaderboardData();
-    fetchLast10Pokemon();
-    fetchLocationPercentages();
+let shinyOdds = 8192; // Default value
 
-    document.getElementById('entryForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        addEntry();
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch shiny odds from config
+    fetch('/config')
+        .then(response => response.json())
+        .then(cfg => {
+            shinyOdds = cfg.shiny_odds || 8192;
+            fetchTotalPokemon();
+            fetchLeaderboardData();
+            fetchLast10Pokemon();
+            fetchLocationPercentages();
+            fetchCurrentStreak(); // <-- Updated line
+            fetchLongestStreak(); // <-- Added line
+
+            document.getElementById('entryForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                addEntry();
+            });
+        })
+        .catch(() => {
+            // If config fetch fails, use default odds
+            fetchTotalPokemon();
+            fetchLeaderboardData();
+            fetchLast10Pokemon();
+            fetchLocationPercentages();
+            fetchCurrentStreak(); // <-- Updated line
+            fetchLongestStreak(); // <-- Added line
+
+            document.getElementById('entryForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                addEntry();
+            });
+        });
 });
 
 function sanitizeFilename(name) {
@@ -15,12 +39,38 @@ function sanitizeFilename(name) {
     return name.toLowerCase().replace(/ /g, '_');
 }
 
-function getGifPath(pokemonName) {
-    // 1/8192 chance to use the shiny GIF
-    const chance = Math.floor(Math.random() * 8192);
-    const folder = chance === 0 ? 'shiny_gifs' : 'gifs';
+function getGifPath(pokemonName, shinyCheckCallback) {
+    // Use shinyOdds from config
+    const isShiny = Math.floor(Math.random() * shinyOdds) === 0;
+    if (isShiny && typeof shinyCheckCallback === 'function') {
+        shinyCheckCallback();
+    }
+    const folder = isShiny ? 'shiny_gifs' : 'gifs';
     const filename = sanitizeFilename(pokemonName);
     return `/static/${folder}/${filename}.gif`;
+}
+
+let shinyMessageShown = false;
+
+function showShinyMessageAndAudio() {
+    if (!shinyMessageShown) {
+        shinyMessageShown = true;
+        const messageElem = document.getElementById('message');
+        if (messageElem) {
+            messageElem.textContent = '✨ A shiny Pokémon appeared! ✨';
+        }
+        const audio = new Audio('/static/shiny.mp3');
+        audio.play().catch(() => {
+            if (messageElem) {
+                messageElem.textContent += ' (Click anywhere to hear the shiny sound!)';
+            }
+            const playShinyAudio = () => {
+                audio.play();
+                document.removeEventListener('click', playShinyAudio);
+            };
+            document.addEventListener('click', playShinyAudio);
+        });
+    }
 }
 
 function fetchTotalPokemon() {
@@ -36,8 +86,6 @@ function fetchTotalPokemon() {
         });
 }
 
-// Existing functions...
-
 function fetchLeaderboardData() {
     fetch('/leaderboard')
         .then(response => response.json())
@@ -46,7 +94,7 @@ function fetchLeaderboardData() {
             leaderboardTable.innerHTML = '';
 
             data.forEach((row, index) => {
-                const gifPath = getGifPath(row.Pokemon);
+                const gifPath = getGifPath(row.Pokemon, showShinyMessageAndAudio);
 
                 const newRow = leaderboardTable.insertRow();
                 newRow.innerHTML = 
@@ -72,7 +120,7 @@ function fetchLast10Pokemon() {
             last10Table.innerHTML = '';
 
             data.forEach(entry => {
-                const gifPath = getGifPath(entry.Pokemon);
+                const gifPath = getGifPath(entry.Pokemon, showShinyMessageAndAudio);
 
                 const newRow = last10Table.insertRow();
                 newRow.innerHTML = 
@@ -80,7 +128,8 @@ function fetchLast10Pokemon() {
                         <img src="${gifPath}" alt="${entry.Pokemon}" class="pokemon-gif">
                         ${entry.Pokemon}
                     </td>
-                    <td>${entry.Date}</td>`;
+                    <td>${entry.Date}</td>
+                    <td>${entry.Location}</td>`;
             });
         })
         .catch(error => {
@@ -107,6 +156,36 @@ function fetchLocationPercentages() {
         });
 }
 
+function fetchCurrentStreak() {
+    fetch('/current_streak')
+        .then(response => response.json())
+        .then(data => {
+            const streakDiv = document.getElementById('currentStreak');
+            streakDiv.textContent = `Current Streak: ${data.current_streak} day${data.current_streak === 1 ? '' : 's'}`;
+        })
+        .catch(error => {
+            console.error('Error fetching current streak:', error);
+            document.getElementById('currentStreak').textContent = 'Current Streak: Error loading data.';
+        });
+}
+
+function fetchLongestStreak() {
+    fetch('/longest_streak')
+        .then(response => response.json())
+        .then(data => {
+            const longestStreakDiv = document.getElementById('longestStreak');
+            let streakText = `Longest Streak: ${data.longest_streak} day${data.longest_streak === 1 ? '' : 's'}`;
+            if (data.start_date && data.end_date) {
+                streakText += ` (${data.start_date} - ${data.end_date})`;
+            }
+            longestStreakDiv.textContent = streakText;
+        })
+        .catch(error => {
+            console.error('Error fetching longest streak:', error);
+            document.getElementById('longestStreak').textContent = 'Longest Streak: Error loading data.';
+        });
+}
+
 function addEntry() {
     const formData = new FormData(document.getElementById('entryForm'));
 
@@ -121,6 +200,8 @@ function addEntry() {
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
+            fetchCurrentStreak(); // <-- Updated line
+            fetchLongestStreak(); // <-- Added line
             document.getElementById('entryForm').reset();
             document.getElementById('message').textContent = 'Entry added successfully.';
         } else {

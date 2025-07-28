@@ -5,7 +5,7 @@ import os
 import re
 from datetime import datetime
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 
 app = Flask(__name__, static_folder="static", template_folder="static/templates")
 
@@ -157,25 +157,27 @@ def last10():
     if not rows:
         return jsonify([])
 
-    # Parse the dates, sort descending
-    for row in rows:
+    # Attach index to each row for stable sorting
+    for idx, row in enumerate(rows):
         try:
             row["_date_dt"] = datetime.strptime(row["Date"], "%m/%d/%Y")
         except ValueError:
             row["_date_dt"] = datetime.min
+        row["_csv_idx"] = idx
 
-    rows.sort(key=lambda x: x["_date_dt"], reverse=True)
+    # Sort by date descending, then by CSV index descending (later rows first)
+    rows.sort(key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
 
     # Take the first 10
     last_10 = rows[:10]
 
     # Clean up for JSON response
     for row in last_10:
-        # Return the original Date format or reformat it if needed
         date_str = row["_date_dt"].strftime("%m/%d/%Y")
         date_str = re.sub(r"\b0(\d)", r"\1", date_str)
         row["Date"] = date_str
         row.pop("_date_dt", None)
+        row.pop("_csv_idx", None)
 
     return jsonify(last_10)
 
@@ -212,6 +214,174 @@ def location_percentages():
 def total_pokemon():
     rows = read_csv()
     return jsonify({"total_pokemon": len(rows)})
+
+
+@app.route("/config")
+def get_config():
+    # Only return the shiny_odds field for the frontend
+    return jsonify({"shiny_odds": config.get("shiny_odds", 8192)})
+
+
+@app.route("/last_pokemon")
+def last_pokemon():
+    rows = read_csv()
+    if not rows:
+        # No entries, return 404
+        return "", 404
+
+    # Get the most recent entry by date
+    for row in rows:
+        try:
+            row["_date_dt"] = datetime.strptime(row["Date"], "%m/%d/%Y")
+        except ValueError:
+            row["_date_dt"] = datetime.min
+
+    rows.sort(key=lambda x: x["_date_dt"], reverse=True)
+    last = rows[0]
+    pokemon_name = last["Pokemon"]
+    gif_filename = sanitize_filename(pokemon_name) + ".gif"
+    gif_folder = os.path.join(app.static_folder, "gifs")
+
+    # If the GIF doesn't exist, return 404
+    if not os.path.exists(os.path.join(gif_folder, gif_filename)):
+        return "", 404
+
+    return send_from_directory(gif_folder, gif_filename)
+
+
+@app.route("/play_streak")
+def play_streak():
+    rows = read_csv()
+    if not rows:
+        return jsonify({"play_streak": 0})
+
+    # Get all unique dates from the CSV
+    date_set = set()
+    for row in rows:
+        try:
+            dt = datetime.strptime(row["Date"], "%m/%d/%Y")
+            date_set.add(dt.date())
+        except ValueError:
+            continue
+
+    if not date_set:
+        return jsonify({"play_streak": 0})
+
+    today = datetime.now().date()
+    sorted_dates = sorted(date_set, reverse=True)
+
+    # If the most recent entry is not today or yesterday, streak is 0
+    if (today not in date_set) and ((today - sorted_dates[0]).days > 1):
+        return jsonify({"play_streak": 0})
+
+    # Start from the most recent date, count consecutive days
+    streak = 1
+    for i in range(1, len(sorted_dates)):
+        if (sorted_dates[i-1] - sorted_dates[i]).days == 1:
+            streak += 1
+        else:
+            break
+
+    # If today is not in the streak, don't count today yet
+    if today not in date_set:
+        pass  # streak remains as is
+    return jsonify({"play_streak": streak})
+
+
+@app.route("/current_streak")
+def current_streak():
+    rows = read_csv()
+    if not rows:
+        return jsonify({"current_streak": 0})
+
+    # Get all unique dates from the CSV
+    date_set = set()
+    for row in rows:
+        try:
+            dt = datetime.strptime(row["Date"], "%m/%d/%Y")
+            date_set.add(dt.date())
+        except ValueError:
+            continue
+
+    if not date_set:
+        return jsonify({"current_streak": 0})
+
+    today = datetime.now().date()
+    sorted_dates = sorted(date_set, reverse=True)
+
+    # If the most recent entry is not today or yesterday, streak is 0
+    if (today not in date_set) and ((today - sorted_dates[0]).days > 1):
+        return jsonify({"current_streak": 0})
+
+    # Start from the most recent date, count consecutive days
+    streak = 1
+    for i in range(1, len(sorted_dates)):
+        if (sorted_dates[i-1] - sorted_dates[i]).days == 1:
+            streak += 1
+        else:
+            break
+
+    # If today is not in the streak, don't count today yet
+    if today not in date_set:
+        pass  # streak remains as is
+    return jsonify({"current_streak": streak})
+
+
+@app.route("/longest_streak")
+def longest_streak():
+    rows = read_csv()
+    if not rows:
+        return jsonify({"longest_streak": 0, "start_date": None, "end_date": None})
+
+    # Get all unique dates from the CSV
+    date_set = set()
+    for row in rows:
+        try:
+            dt = datetime.strptime(row["Date"], "%m/%d/%Y")
+            date_set.add(dt.date())
+        except ValueError:
+            continue
+
+    if not date_set:
+        return jsonify({"longest_streak": 0, "start_date": None, "end_date": None})
+
+    sorted_dates = sorted(date_set)
+    longest = 1
+    current = 1
+    streak_start = sorted_dates[0]
+    streak_end = sorted_dates[0]
+    longest_start = sorted_dates[0]
+    longest_end = sorted_dates[0]
+
+    for i in range(1, len(sorted_dates)):
+        if (sorted_dates[i] - sorted_dates[i-1]).days == 1:
+            current += 1
+            streak_end = sorted_dates[i]
+            if current > longest:
+                longest = current
+                longest_start = streak_start
+                longest_end = streak_end
+        else:
+            current = 1
+            streak_start = sorted_dates[i]
+            streak_end = sorted_dates[i]
+
+    # Format dates as M/D/YYYY
+    start_str = longest_start.strftime("%m/%d/%Y")
+    start_str = re.sub(r"\b0(\d)", r"\1", start_str)
+    end_str = longest_end.strftime("%m/%d/%Y")
+    end_str = re.sub(r"\b0(\d)", r"\1", end_str)
+
+    return jsonify({
+        "longest_streak": longest,
+        "start_date": start_str,
+        "end_date": end_str
+    })
+
+
+def sanitize_filename(name):
+    # Convert to lowercase and replace spaces with underscores
+    return name.lower().replace(" ", "_")
 
 
 if __name__ == "__main__":
