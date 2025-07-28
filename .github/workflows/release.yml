@@ -44,7 +44,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}   # The tag that triggered the workflow
           release_name: ${{ github.ref_name }}
-          draft: false
+          draft: true
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
