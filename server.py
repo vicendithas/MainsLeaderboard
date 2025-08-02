@@ -229,14 +229,16 @@ def last_pokemon():
         # No entries, return 404
         return "", 404
 
-    # Get the most recent entry by date
-    for row in rows:
+    # Attach index for tie-breaking
+    for idx, row in enumerate(rows):
         try:
             row["_date_dt"] = datetime.strptime(row["Date"], "%m/%d/%Y")
         except ValueError:
             row["_date_dt"] = datetime.min
+        row["_csv_idx"] = idx
 
-    rows.sort(key=lambda x: x["_date_dt"], reverse=True)
+    # Sort by date descending, then by CSV index descending (later rows first)
+    rows.sort(key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
     last = rows[0]
     pokemon_name = last["Pokemon"]
     gif_filename = sanitize_filename(pokemon_name) + ".gif"
