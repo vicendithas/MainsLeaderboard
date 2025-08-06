@@ -171,6 +171,25 @@ def last10():
     # Take the first 10
     last_10 = rows[:10]
 
+    # For each entry, find the previous occurrence of the same Pokemon (before this entry)
+    for entry in last_10:
+        entry_date = entry["_date_dt"]
+        entry_idx = entry["_csv_idx"]
+        pokemon = entry["Pokemon"]
+
+        # Search for previous occurrence (with lower index and/or earlier date)
+        prev_days = None
+        for prev in rows[10:]:  # Only look at older entries
+            if prev["Pokemon"] == pokemon:
+                prev_date = prev["_date_dt"]
+                if prev_date < entry_date or (prev_date == entry_date and prev["_csv_idx"] < entry_idx):
+                    prev_days = (entry_date - prev_date).days
+                    break
+        if prev_days is not None and prev_days >= 0:
+            entry["Days Since Last"] = str(prev_days)
+        else:
+            entry["Days Since Last"] = "Never"
+
     # Clean up for JSON response
     for row in last_10:
         date_str = row["_date_dt"].strftime("%m/%d/%Y")
