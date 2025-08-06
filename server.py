@@ -186,9 +186,9 @@ def last10():
                     prev_days = (entry_date - prev_date).days
                     break
         if prev_days is not None and prev_days >= 0:
-            entry["Days Since Last"] = str(prev_days)
+            entry["Days Since Last Ran"] = str(prev_days)
         else:
-            entry["Days Since Last"] = "Never"
+            entry["Days Since Last Ran"] = "Never"
 
     # Clean up for JSON response
     for row in last_10:

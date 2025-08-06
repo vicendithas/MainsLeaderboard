@@ -130,7 +130,7 @@ function fetchLast10Pokemon() {
                     </td>
                     <td>${entry.Date}</td>
                     <td>${entry.Location}</td>
-                    <td>${entry["Days Since Last"] || ""}</td>`;
+                    <td>${entry["Days Since Last Ran"] || ""}</td>`;
             });
         })
         .catch(error => {
