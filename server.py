@@ -173,19 +173,30 @@ def last10():
     last_10 = rows[:10]
 
     # For each entry, find the previous occurrence of the same Pokemon (before this entry)
-    for entry in last_10:
+    for i, entry in enumerate(last_10):
         entry_date = entry["_date_dt"]
         entry_idx = entry["_csv_idx"]
         pokemon = entry["Pokemon"]
 
-        # Search for previous occurrence (with lower index and/or earlier date)
+        # Search for previous occurrence in the remaining sorted entries
         prev_days = None
-        for prev in rows[10:]:  # Only look at older entries
-            if prev["Pokemon"] == pokemon:
-                prev_date = prev["_date_dt"]
-                if prev_date < entry_date or (prev_date == entry_date and prev["_csv_idx"] < entry_idx):
-                    prev_days = (entry_date - prev_date).days
-                    break
+        
+        # First check if there's a previous occurrence in the rest of the last 10
+        for j in range(i + 1, len(last_10)):
+            if last_10[j]["Pokemon"] == pokemon:
+                prev_date = last_10[j]["_date_dt"]
+                prev_days = (entry_date - prev_date).days
+                break
+        
+        # If not found in last 10, search in the older entries
+        if prev_days is None:
+            for prev in rows[10:]:
+                if prev["Pokemon"] == pokemon:
+                    prev_date = prev["_date_dt"]
+                    if prev_date < entry_date or (prev_date == entry_date and prev["_csv_idx"] < entry_idx):
+                        prev_days = (entry_date - prev_date).days
+                        break
+        
         if prev_days is not None and prev_days >= 0:
             entry["Days Since Last Ran"] = str(prev_days)
         else:
