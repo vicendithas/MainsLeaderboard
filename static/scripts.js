@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(cfg => {
             shinyOdds = cfg.shiny_odds || 8192;
             fetchTotalPokemon();
+            fetchAverageBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => {
             // If config fetch fails, use default odds
             fetchTotalPokemon();
+            fetchAverageBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
@@ -83,6 +85,19 @@ function fetchTotalPokemon() {
         .catch(error => {
             console.error('Error fetching total Pokemon data:', error);
             document.getElementById('totalEntries').textContent = 'Total Pokemon: Error loading data.';
+        });
+}
+
+function fetchAverageBst() {
+    fetch('/average_bst')
+        .then(response => response.json())
+        .then(data => {
+            const averageBstDiv = document.getElementById('averageBst');
+            averageBstDiv.textContent = `Average BST: ${data.average_bst}`;
+        })
+        .catch(error => {
+            console.error('Error fetching average BST data:', error);
+            document.getElementById('averageBst').textContent = 'Average BST: Error loading data.';
         });
 }
 
@@ -198,6 +213,7 @@ function addEntry() {
     .then(data => {
         if (data.success) {
             fetchTotalPokemon(); // Update the total Pokemon count
+            fetchAverageBst(); // Update the average BST
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();

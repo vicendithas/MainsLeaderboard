@@ -382,6 +382,24 @@ def longest_streak():
     })
 
 
+@app.route("/average_bst")
+def average_bst():
+    rows = read_csv()
+    if not rows:
+        return jsonify({"average_bst": 0})
+    
+    total_bst = 0
+    total_entries = len(rows)
+    
+    for row in rows:
+        pokemon = row["Pokemon"]
+        bst = get_pokemon_bst(pokemon)
+        total_bst += bst
+    
+    average = total_bst / total_entries if total_entries > 0 else 0
+    return jsonify({"average_bst": int(average)})
+
+
 def sanitize_filename(name):
     # Convert to lowercase and replace spaces with underscores
     return name.lower().replace(" ", "_")
