@@ -231,7 +231,7 @@ function addEntry() {
     });
 }
 
-let sortOrder = [true, false, true, true, true]; // Track sort order for each column (true = ascending)
+let sortOrder = [true, false, false, false, false]; // Track sort order for each column (true = ascending)
 
 function sortTable(columnIndex) {
     const table = document.getElementById('leaderboard');
