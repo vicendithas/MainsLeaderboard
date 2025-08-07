@@ -9,6 +9,9 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 
 app = Flask(__name__, static_folder="static", template_folder="static/templates")
 
+# Import BST data
+from bst import pokemon_bst
+
 # Path to the CSV file
 CSV_FILE = "pokemon_usage.csv"
 
@@ -86,7 +89,7 @@ def leaderboard():
         return jsonify([])  # Return an empty list if no data
 
     # Count occurrences of each Pokémon and track the last time ran
-    # We’ll store data as { "Pikachu": {"count": x, "last_date": y}, ... }
+    # We'll store data as { "Pikachu": {"count": x, "last_date": y}, ... }
     data = {}
     for row in rows:
         pokemon = row["Pokemon"]
@@ -124,23 +127,21 @@ def leaderboard():
         else:
             date_str = ""  # or some fallback if no date
 
+        # Get BST from pokemon_bst dictionary with case-insensitive lookup
+        bst = get_pokemon_bst(pokemon)
+
         leaderboard_list.append(
             {
                 "Pokemon": pokemon,
                 "Count": info["count"],
                 "Last Time Ran": date_str,
+                "BST": bst,
                 # keep a separate field for sorting by datetime
                 "_last_date_dt": last_date_dt if last_date_dt else datetime.min,
             }
         )
 
     # Sort by Count descending, then by Last Time Ran ascending
-    leaderboard_list.sort(key=lambda x: (x["Count"], x["_last_date_dt"]), reverse=False)
-    # The above sorting puts the smallest 'Count' first, but we want
-    # descending by 'Count' and ascending by date. We'll do a two-step approach:
-    # 1) Sort ascending by _last_date_dt
-    # 2) Sort descending by Count
-    # Alternatively, we can do a single sort with a negative count:
     leaderboard_list.sort(key=lambda x: (-x["Count"], x["_last_date_dt"]))
 
     # Remove the helper key
@@ -384,6 +385,25 @@ def longest_streak():
 def sanitize_filename(name):
     # Convert to lowercase and replace spaces with underscores
     return name.lower().replace(" ", "_")
+
+
+def get_pokemon_bst(pokemon_name):
+    """
+    Get BST for a Pokemon with case-insensitive lookup.
+    Returns 0 if Pokemon is not found.
+    """
+    # First try exact match
+    if pokemon_name in pokemon_bst:
+        return pokemon_bst[pokemon_name]
+    
+    # If no exact match, try case-insensitive lookup
+    pokemon_lower = pokemon_name.lower()
+    for bst_pokemon, bst_value in pokemon_bst.items():
+        if bst_pokemon.lower() == pokemon_lower:
+            return bst_value
+    
+    # If still no match, return 0
+    return 0
 
 
 if __name__ == "__main__":
