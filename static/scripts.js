@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(cfg => {
             shinyOdds = cfg.shiny_odds || 8192;
             fetchTotalPokemon();
+            fetchAverageBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => {
             // If config fetch fails, use default odds
             fetchTotalPokemon();
+            fetchAverageBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
@@ -86,6 +88,19 @@ function fetchTotalPokemon() {
         });
 }
 
+function fetchAverageBst() {
+    fetch('/average_bst')
+        .then(response => response.json())
+        .then(data => {
+            const averageBstDiv = document.getElementById('averageBst');
+            averageBstDiv.textContent = `Average BST: ${data.average_bst}`;
+        })
+        .catch(error => {
+            console.error('Error fetching average BST data:', error);
+            document.getElementById('averageBst').textContent = 'Average BST: Error loading data.';
+        });
+}
+
 function fetchLeaderboardData() {
     fetch('/leaderboard')
         .then(response => response.json())
@@ -103,6 +118,7 @@ function fetchLeaderboardData() {
                         <img src="${gifPath}" alt="${row.Pokemon}" class="pokemon-gif">
                         ${row.Pokemon}
                     </td>
+                    <td>${row.BST}</td>
                     <td>${row.Count}</td>
                     <td>${row['Last Time Ran']}</td>`;
             });
@@ -198,6 +214,7 @@ function addEntry() {
     .then(data => {
         if (data.success) {
             fetchTotalPokemon(); // Update the total Pokemon count
+            fetchAverageBst(); // Update the average BST
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
@@ -215,7 +232,7 @@ function addEntry() {
     });
 }
 
-let sortOrder = [true, false, true, true]; // Track sort order for each column (true = ascending)
+let sortOrder = [true, false, false, false, false]; // Track sort order for each column (true = ascending)
 
 function sortTable(columnIndex) {
     const table = document.getElementById('leaderboard');
@@ -226,7 +243,7 @@ function sortTable(columnIndex) {
     sortOrder[columnIndex] = !sortOrder[columnIndex];
 
     // Clear existing arrows
-    const arrows = ['rankArrow', 'pokemonArrow', 'countArrow', 'lastTimeRanArrow'];
+    const arrows = ['rankArrow', 'pokemonArrow', 'bstArrow', 'countArrow', 'lastTimeRanArrow'];
     arrows.forEach((id, index) => {
         const arrow = document.getElementById(id);
         arrow.classList.remove('up', 'down');
@@ -241,9 +258,9 @@ function sortTable(columnIndex) {
         // Handle different column types
         if (columnIndex === 0) { // Rank (numeric sort)
             return sortOrder[columnIndex] ? parseInt(aText) - parseInt(bText) : parseInt(bText) - parseInt(aText);
-        } else if (columnIndex === 2) { // Count (numeric sort)
+        } else if (columnIndex === 2 || columnIndex === 3) { // BST and Count (numeric sort)
             return sortOrder[columnIndex] ? aText - bText : bText - aText;
-        } else if (columnIndex === 3) { // Last Time Ran (date sort)
+        } else if (columnIndex === 4) { // Last Time Ran (date sort)
             const aDate = new Date(aText);
             const bDate = new Date(bText);
             return sortOrder[columnIndex] ? aDate - bDate : bDate - aDate;

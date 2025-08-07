@@ -12,6 +12,7 @@
         <div class="title-container">
             <h1>{{ title }}</h1>
             <div id="totalEntries">Total Pokemon: Loading...</div> <!-- Updated section for total Pokémon -->
+            <div id="averageBst">Average BST: Loading...</div>
             <div id="currentStreak">Current Streak: Loading...</div>
             <div id="longestStreak">Longest Streak: Loading...</div>
         </div>
@@ -38,9 +39,10 @@
                 <thead>
                     <tr>
                         <th onclick="sortTable(0)">Rank <span class="sort-arrow" id="rankArrow"></span></th>
-			            <th onclick="sortTable(1)">Pokemon <span class="sort-arrow" id="pokemonArrow"></span></th>
-			            <th onclick="sortTable(2)">Count <span class="sort-arrow" id="countArrow"></span></th>
-			            <th onclick="sortTable(3)">Last Time Ran <span class="sort-arrow" id="lastTimeRanArrow"></span></th>
+                        <th onclick="sortTable(1)">Pokemon <span class="sort-arrow" id="pokemonArrow"></span></th>
+                        <th onclick="sortTable(2)">BST <span class="sort-arrow" id="bstArrow"></span></th>
+                        <th onclick="sortTable(3)">Count <span class="sort-arrow" id="countArrow"></span></th>
+                        <th onclick="sortTable(4)">Last Time Ran <span class="sort-arrow" id="lastTimeRanArrow"></span></th>
                     </tr>
                 </thead>
                 <tbody>
