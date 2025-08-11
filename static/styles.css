@@ -23,6 +23,29 @@ body {
     margin: 0;
 }
 
+/* Title container with GitHub icon */
+.title-with-github {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.github-icon {
+    color: #e0e0e0;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.github-icon:hover {
+    color: #ffffff;
+}
+
+.github-icon svg {
+    vertical-align: middle;
+}
+
 /* Form styles */
 form {
     display: flex;
