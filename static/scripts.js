@@ -107,7 +107,7 @@ let showDaysSinceLastLeaderboard = false; // Separate toggle for leaderboard
 function toggleSinceLastColumn() {
     showDaysSinceLast = !showDaysSinceLast;
     const header = document.getElementById('sinceLastHeader');
-    header.textContent = showDaysSinceLast ? 'Days Since Last Ran' : 'Runs Since Last Ran';
+    header.innerHTML = `🔄 ${showDaysSinceLast ? 'Days Since Last Ran' : 'Runs Since Last Ran'}`;
     
     // Refresh the Last 10 table with the new column
     fetchLast10Pokemon();
@@ -116,7 +116,7 @@ function toggleSinceLastColumn() {
 function toggleLeaderboardSinceLastColumn() {
     showDaysSinceLastLeaderboard = !showDaysSinceLastLeaderboard;
     const header = document.getElementById('leaderboardSinceLastHeader');
-    header.textContent = showDaysSinceLastLeaderboard ? 'Days Since Last Ran' : 'Runs Since Last Ran';
+    header.innerHTML = `🔄 ${showDaysSinceLastLeaderboard ? 'Days Since Last Ran' : 'Runs Since Last Ran'}`;
     
     // Refresh the Leaderboard table with the new column
     fetchLeaderboardData();
