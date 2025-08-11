@@ -101,6 +101,27 @@ function fetchAverageBst() {
         });
 }
 
+let showDaysSinceLast = false; // Start with Runs Since Last Ran
+let showDaysSinceLastLeaderboard = false; // Separate toggle for leaderboard
+
+function toggleSinceLastColumn() {
+    showDaysSinceLast = !showDaysSinceLast;
+    const header = document.getElementById('sinceLastHeader');
+    header.textContent = showDaysSinceLast ? 'Days Since Last Ran' : 'Runs Since Last Ran';
+    
+    // Refresh the Last 10 table with the new column
+    fetchLast10Pokemon();
+}
+
+function toggleLeaderboardSinceLastColumn() {
+    showDaysSinceLastLeaderboard = !showDaysSinceLastLeaderboard;
+    const header = document.getElementById('leaderboardSinceLastHeader');
+    header.textContent = showDaysSinceLastLeaderboard ? 'Days Since Last Ran' : 'Runs Since Last Ran';
+    
+    // Refresh the Leaderboard table with the new column
+    fetchLeaderboardData();
+}
+
 function fetchLeaderboardData() {
     fetch('/leaderboard')
         .then(response => response.json())
@@ -111,6 +132,11 @@ function fetchLeaderboardData() {
             data.forEach((row, index) => {
                 const gifPath = getGifPath(row.Pokemon, showShinyMessageAndAudio);
 
+                // Choose which value to display based on current toggle state
+                const sinceLastValue = showDaysSinceLastLeaderboard ? 
+                    (row["Days Since Last Ran"] || "") : 
+                    (row["Runs Since Last Ran"] || "");
+
                 const newRow = leaderboardTable.insertRow();
                 newRow.innerHTML = 
                     `<td>${index + 1}</td>
@@ -120,23 +146,13 @@ function fetchLeaderboardData() {
                     </td>
                     <td>${row.BST}</td>
                     <td>${row.Count}</td>
-                    <td>${row['Last Time Ran']}</td>`;
+                    <td>${row['Last Time Ran']}</td>
+                    <td>${sinceLastValue}</td>`;
             });
         })
         .catch(error => {
             console.error('Error fetching leaderboard data:', error);
         });
-}
-
-let showDaysSinceLast = false; // Start with Runs Since Last Ran
-
-function toggleSinceLastColumn() {
-    showDaysSinceLast = !showDaysSinceLast;
-    const header = document.getElementById('sinceLastHeader');
-    header.textContent = showDaysSinceLast ? 'Days Since Last Ran' : 'Runs Since Last Ran';
-    
-    // Refresh the Last 10 table with the new column
-    fetchLast10Pokemon();
 }
 
 function fetchLast10Pokemon() {
@@ -248,7 +264,7 @@ function addEntry() {
     });
 }
 
-let sortOrder = [true, false, false, false, false]; // Track sort order for each column (true = ascending)
+let sortOrder = [true, false, false, false, false, false]; // Track sort order for each column (added one more for new column)
 
 function sortTable(columnIndex) {
     const table = document.getElementById('leaderboard');
@@ -274,8 +290,15 @@ function sortTable(columnIndex) {
         // Handle different column types
         if (columnIndex === 0) { // Rank (numeric sort)
             return sortOrder[columnIndex] ? parseInt(aText) - parseInt(bText) : parseInt(bText) - parseInt(aText);
-        } else if (columnIndex === 2 || columnIndex === 3) { // BST and Count (numeric sort)
-            return sortOrder[columnIndex] ? aText - bText : bText - aText;
+        } else if (columnIndex === 2 || columnIndex === 3 || columnIndex === 5) { // BST, Count, and Since Last Ran (numeric sort)
+            // Handle "Never" values for Since Last Ran column
+            if (columnIndex === 5) {
+                const aNum = aText === "Never" ? -1 : parseInt(aText);
+                const bNum = bText === "Never" ? -1 : parseInt(bText);
+                return sortOrder[columnIndex] ? aNum - bNum : bNum - aNum;
+            } else {
+                return sortOrder[columnIndex] ? aText - bText : bText - aText;
+            }
         } else if (columnIndex === 4) { // Last Time Ran (date sort)
             const aDate = new Date(aText);
             const bDate = new Date(bText);
@@ -285,10 +308,12 @@ function sortTable(columnIndex) {
         }
     });
 
-    // Update the arrow for the sorted column
-    const arrow = document.getElementById(arrows[columnIndex]);
-    arrow.style.visibility = 'visible'; // Show the arrow
-    arrow.classList.add(sortOrder[columnIndex] ? 'up' : 'down');
+    // Update the arrow for the sorted column (only for columns that have arrows)
+    if (columnIndex < arrows.length) {
+        const arrow = document.getElementById(arrows[columnIndex]);
+        arrow.style.visibility = 'visible'; // Show the arrow
+        arrow.classList.add(sortOrder[columnIndex] ? 'up' : 'down');
+    }
 
     // Remove existing rows and append sorted rows
     tbody.innerHTML = '';

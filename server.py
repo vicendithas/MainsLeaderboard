@@ -88,8 +88,24 @@ def leaderboard():
     if not rows:
         return jsonify([])  # Return an empty list if no data
 
+    # Attach index to each row for stable sorting
+    for idx, row in enumerate(rows):
+        try:
+            row["_date_dt"] = datetime.strptime(row["Date"], "%m/%d/%Y")
+        except ValueError:
+            row["_date_dt"] = datetime.min
+        row["_csv_idx"] = idx
+
+    # Sort by date descending, then by CSV index descending (later rows first)
+    sorted_rows = sorted(rows, key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
+
+    # Get today's date and the most recent entry date for calculations
+    today = datetime.now()
+    most_recent_entry_date = sorted_rows[0]["_date_dt"] if sorted_rows else today
+    most_recent_entry_idx = sorted_rows[0]["_csv_idx"] if sorted_rows else 0
+
     # Count occurrences of each Pokémon and track the last time ran
-    # We'll store data as { "Pikachu": {"count": x, "last_date": y}, ... }
+    # We'll store data as { "Pikachu": {"count": x, "last_date": y, "last_idx": z}, ... }
     data = {}
     for row in rows:
         pokemon = row["Pokemon"]
@@ -105,20 +121,25 @@ def leaderboard():
             data[pokemon] = {
                 "count": 0,
                 "last_date": run_date,  # store a datetime for comparison
+                "last_idx": row["_csv_idx"],
             }
         data[pokemon]["count"] += 1
 
         # Update last_date to the max date encountered
         if run_date and data[pokemon]["last_date"]:
-            if run_date > data[pokemon]["last_date"]:
+            if run_date > data[pokemon]["last_date"] or (run_date == data[pokemon]["last_date"] and row["_csv_idx"] > data[pokemon]["last_idx"]):
                 data[pokemon]["last_date"] = run_date
+                data[pokemon]["last_idx"] = row["_csv_idx"]
         elif run_date and not data[pokemon]["last_date"]:
             data[pokemon]["last_date"] = run_date
+            data[pokemon]["last_idx"] = row["_csv_idx"]
 
     # Convert the dictionary to a list of dicts for sorting
     leaderboard_list = []
     for pokemon, info in data.items():
         last_date_dt = info["last_date"]
+        last_idx = info["last_idx"]
+        
         # If we have a datetime, convert back to string
         if last_date_dt:
             date_str = last_date_dt.strftime("%m/%d/%Y")
@@ -130,12 +151,36 @@ def leaderboard():
         # Get BST from pokemon_bst dictionary with case-insensitive lookup
         bst = get_pokemon_bst(pokemon)
 
+        # Calculate runs and days since last ran for this Pokemon
+        runs_since_last = None
+        days_since_last = None
+        
+        if last_date_dt:
+            # Days since last ran = days from today to the last time this Pokemon was run
+            days_since_last = (today - last_date_dt).days
+            
+            # Runs since last ran = entries from the most recent entry back to this Pokemon's last run
+            if last_date_dt == most_recent_entry_date and last_idx == most_recent_entry_idx:
+                # This Pokemon was the most recent entry, so 0 runs since
+                runs_since_last = 0
+            else:
+                # Count entries that occurred after this Pokemon's last run
+                runs_count = 0
+                for row in sorted_rows:
+                    # Entry must be after this Pokemon's last occurrence
+                    if (row["_date_dt"] > last_date_dt) or (row["_date_dt"] == last_date_dt and row["_csv_idx"] > last_idx):
+                        runs_count += 1
+                
+                runs_since_last = runs_count
+
         leaderboard_list.append(
             {
                 "Pokemon": pokemon,
                 "Count": info["count"],
                 "Last Time Ran": date_str,
                 "BST": bst,
+                "Days Since Last Ran": str(days_since_last) if days_since_last is not None else "Never",
+                "Runs Since Last Ran": str(runs_since_last) if runs_since_last is not None else "Never",
                 # keep a separate field for sorting by datetime
                 "_last_date_dt": last_date_dt if last_date_dt else datetime.min,
             }
