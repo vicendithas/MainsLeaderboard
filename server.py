@@ -84,7 +84,7 @@ def add_entry():
 def calculate_time_since(from_date, to_date):
     """
     Calculate the time difference between two dates and return a formatted string
-    in the format: 2yrs, 4mos, 8days
+    in the format: 2 yrs, 4 mos, 8 days
     """
     if not from_date or not to_date:
         return "Never"
@@ -97,7 +97,7 @@ def calculate_time_since(from_date, to_date):
     total_days = (to_date - from_date).days
     
     if total_days == 0:
-        return "0days"
+        return "0 days"
     
     # Calculate years, months, and days properly
     years = to_date.year - from_date.year
@@ -129,17 +129,17 @@ def calculate_time_since(from_date, to_date):
         years -= 1
         months += 12
     
-    # Format the result
+    # Format the result with spaces
     parts = []
     if years > 0:
-        parts.append(f"{years}yr{'s' if years != 1 else ''}")
+        parts.append(f"{years} yr{'s' if years != 1 else ''}")
     if months > 0:
-        parts.append(f"{months}mo{'s' if months != 1 else ''}")
+        parts.append(f"{months} mo{'s' if months != 1 else ''}")
     if days > 0:
-        parts.append(f"{days}day{'s' if days != 1 else ''}")
+        parts.append(f"{days} day{'s' if days != 1 else ''}")
     
     if not parts:
-        return "0days"
+        return "0 days"
     
     return ", ".join(parts)
 
