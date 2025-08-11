@@ -336,6 +336,11 @@ function sortTable(columnIndex) {
     const tbody = table.getElementsByTagName('tbody')[0];
     const rows = Array.from(tbody.getElementsByTagName('tr'));
 
+    // Store original order for tiebreaking
+    rows.forEach((row, index) => {
+        row.setAttribute('data-original-order', index);
+    });
+
     // Determine the sort direction
     sortOrder[columnIndex] = !sortOrder[columnIndex];
 
@@ -352,25 +357,30 @@ function sortTable(columnIndex) {
         const aText = a.cells[columnIndex].textContent.trim();
         const bText = b.cells[columnIndex].textContent.trim();
 
+        let comparison = 0;
+
         // Handle different column types
         if (columnIndex === 0) { // Rank (numeric sort)
-            return sortOrder[columnIndex] ? parseInt(aText) - parseInt(bText) : parseInt(bText) - parseInt(aText);
-        } else if (columnIndex === 2 || columnIndex === 3 || columnIndex === 5) { // BST, Count, and Since Last Ran (numeric sort)
-            // Handle "Never" values for Since Last Ran column
-            if (columnIndex === 5) {
-                const aNum = aText === "Never" ? -1 : parseInt(aText);
-                const bNum = bText === "Never" ? -1 : parseInt(bText);
-                return sortOrder[columnIndex] ? aNum - bNum : bNum - aNum;
-            } else {
-                return sortOrder[columnIndex] ? aText - bText : bText - aText;
-            }
+            comparison = parseInt(aText) - parseInt(bText);
+        } else if (columnIndex === 2 || columnIndex === 3) { // BST, Count (numeric sort)
+            comparison = parseInt(aText) - parseInt(bText);
         } else if (columnIndex === 4) { // Last Time Ran (date sort)
             const aDate = new Date(aText);
             const bDate = new Date(bText);
-            return sortOrder[columnIndex] ? aDate - bDate : bDate - aDate;
+            comparison = aDate - bDate;
+            
+            // If dates are equal, use original order as tiebreaker (most recent CSV entry first)
+            if (comparison === 0) {
+                const aOriginalOrder = parseInt(a.getAttribute('data-original-order'));
+                const bOriginalOrder = parseInt(b.getAttribute('data-original-order'));
+                comparison = aOriginalOrder - bOriginalOrder;
+            }
         } else { // Alphabetical sort for Pokemon name
-            return sortOrder[columnIndex] ? aText.localeCompare(bText) : bText.localeCompare(aText);
+            comparison = aText.localeCompare(bText);
         }
+
+        // Apply sort direction
+        return sortOrder[columnIndex] ? comparison : -comparison;
     });
 
     // Update the arrow for the sorted column (only for columns that have arrows)
@@ -382,6 +392,9 @@ function sortTable(columnIndex) {
 
     // Remove existing rows and append sorted rows
     tbody.innerHTML = '';
-    rows.forEach(row => tbody.appendChild(row));
+    rows.forEach(row => {
+        row.removeAttribute('data-original-order'); // Clean up
+        tbody.appendChild(row);
+    });
 }
 
