@@ -128,6 +128,17 @@ function fetchLeaderboardData() {
         });
 }
 
+let showDaysSinceLast = false; // Start with Runs Since Last Ran
+
+function toggleSinceLastColumn() {
+    showDaysSinceLast = !showDaysSinceLast;
+    const header = document.getElementById('sinceLastHeader');
+    header.textContent = showDaysSinceLast ? 'Days Since Last Ran' : 'Runs Since Last Ran';
+    
+    // Refresh the Last 10 table with the new column
+    fetchLast10Pokemon();
+}
+
 function fetchLast10Pokemon() {
     fetch('/last10')
         .then(response => response.json())
@@ -137,6 +148,11 @@ function fetchLast10Pokemon() {
 
             data.forEach(entry => {
                 const gifPath = getGifPath(entry.Pokemon, showShinyMessageAndAudio);
+                
+                // Choose which value to display based on current toggle state
+                const sinceLastValue = showDaysSinceLast ? 
+                    (entry["Days Since Last Ran"] || "") : 
+                    (entry["Runs Since Last Ran"] || "");
 
                 const newRow = last10Table.insertRow();
                 newRow.innerHTML = 
@@ -146,7 +162,7 @@ function fetchLast10Pokemon() {
                     </td>
                     <td>${entry.Date}</td>
                     <td>${entry.Location}</td>
-                    <td>${entry["Days Since Last Ran"] || ""}</td>`;
+                    <td>${sinceLastValue}</td>`;
             });
         })
         .catch(error => {

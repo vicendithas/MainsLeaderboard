@@ -172,35 +172,49 @@ def last10():
     # Take the first 10
     last_10 = rows[:10]
 
-    # For each entry, find the previous occurrence of the same Pokemon (before this entry)
+    # For each entry, find the previous occurrence of the same Pokemon
     for i, entry in enumerate(last_10):
         entry_date = entry["_date_dt"]
         entry_idx = entry["_csv_idx"]
         pokemon = entry["Pokemon"]
 
-        # Search for previous occurrence in the remaining sorted entries
         prev_days = None
+        prev_runs = None
         
-        # First check if there's a previous occurrence in the rest of the last 10
-        for j in range(i + 1, len(last_10)):
-            if last_10[j]["Pokemon"] == pokemon:
-                prev_date = last_10[j]["_date_dt"]
+        # Search through ALL sorted rows (not just last 10) to find previous occurrence
+        for j in range(len(rows)):
+            # Skip entries that are not before the current entry
+            if rows[j]["_date_dt"] > entry_date or (rows[j]["_date_dt"] == entry_date and rows[j]["_csv_idx"] >= entry_idx):
+                continue
+                
+            if rows[j]["Pokemon"] == pokemon:
+                prev_date = rows[j]["_date_dt"]
                 prev_days = (entry_date - prev_date).days
+                
+                # Count runs since last occurrence
+                # This counts entries that occurred after the previous occurrence but before current entry
+                runs_count = 0
+                for k in range(len(rows)):
+                    row_date = rows[k]["_date_dt"]
+                    row_idx = rows[k]["_csv_idx"]
+                    
+                    # Entry must be after the previous occurrence but before current entry
+                    if ((row_date > prev_date) or (row_date == prev_date and row_idx > rows[j]["_csv_idx"])) and \
+                       ((row_date < entry_date) or (row_date == entry_date and row_idx < entry_idx)):
+                        runs_count += 1
+                
+                prev_runs = runs_count
                 break
-        
-        # If not found in last 10, search in the older entries
-        if prev_days is None:
-            for prev in rows[10:]:
-                if prev["Pokemon"] == pokemon:
-                    prev_date = prev["_date_dt"]
-                    if prev_date < entry_date or (prev_date == entry_date and prev["_csv_idx"] < entry_idx):
-                        prev_days = (entry_date - prev_date).days
-                        break
         
         if prev_days is not None and prev_days >= 0:
             entry["Days Since Last Ran"] = str(prev_days)
         else:
             entry["Days Since Last Ran"] = "Never"
+            
+        if prev_runs is not None:
+            entry["Runs Since Last Ran"] = str(prev_runs)
+        else:
+            entry["Runs Since Last Ran"] = "Never"
 
     # Clean up for JSON response
     for row in last_10:
