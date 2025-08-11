@@ -101,16 +101,39 @@ function fetchAverageBst() {
         });
 }
 
-let showDaysSinceLast = false; // Start with Runs Since Last Ran
-let showDaysSinceLastLeaderboard = false; // Separate toggle for leaderboard
+let showTimeSinceLast = false; // Start with Runs Since Last Ran
+let showTimeSinceLastLeaderboard = false; // Separate toggle for leaderboard
 
 function toggleSinceLastColumn() {
-    showDaysSinceLast = !showDaysSinceLast;
+    showTimeSinceLast = !showTimeSinceLast;
     const header = document.getElementById('sinceLastHeader');
-    header.innerHTML = `🔄 ${showDaysSinceLast ? 'Days Since Last Ran' : 'Runs Since Last Ran'}`;
+    header.innerHTML = `🔄 ${showTimeSinceLast ? 'Time Since Last Ran' : 'Runs Since Last Ran'}`;
     
-    // Refresh the Last 10 table with the new column
-    fetchLast10Pokemon();
+    // Update only the column instead of refreshing the whole table
+    updateLast10SinceLastColumn();
+}
+
+function updateLast10SinceLastColumn() {
+    const last10Table = document.getElementById('last10Table').getElementsByTagName('tbody')[0];
+    const rows = last10Table.getElementsByTagName('tr');
+    
+    fetch('/last10')
+        .then(response => response.json())
+        .then(data => {
+            // Update only the 4th column (index 3) for each row
+            for (let i = 0; i < rows.length && i < data.length; i++) {
+                const entry = data[i];
+                const sinceLastValue = showTimeSinceLast ? 
+                    (entry["Time Since Last Ran"] || "") : 
+                    (entry["Runs Since Last Ran"] || "");
+                
+                // Update only the last cell (column 3)
+                rows[i].cells[3].textContent = sinceLastValue;
+            }
+        })
+        .catch(error => {
+            console.error('Error updating last 10 column:', error);
+        });
 }
 
 function updateLeaderboardSinceLastColumn() {
@@ -136,8 +159,8 @@ function updateLeaderboardSinceLastColumn() {
                 // Find the corresponding data for this Pokemon
                 const pokemonData = pokemonDataMap[pokemonName];
                 if (pokemonData) {
-                    const sinceLastValue = showDaysSinceLastLeaderboard ? 
-                        (pokemonData["Days Since Last Ran"] || "") : 
+                    const sinceLastValue = showTimeSinceLastLeaderboard ? 
+                        (pokemonData["Time Since Last Ran"] || "") : 
                         (pokemonData["Runs Since Last Ran"] || "");
                     
                     // Update only the last cell (column 5)
@@ -151,9 +174,9 @@ function updateLeaderboardSinceLastColumn() {
 }
 
 function toggleLeaderboardSinceLastColumn() {
-    showDaysSinceLastLeaderboard = !showDaysSinceLastLeaderboard;
+    showTimeSinceLastLeaderboard = !showTimeSinceLastLeaderboard;
     const header = document.getElementById('leaderboardSinceLastHeader');
-    header.innerHTML = `🔄 ${showDaysSinceLastLeaderboard ? 'Days Since Last Ran' : 'Runs Since Last Ran'}`;
+    header.innerHTML = `🔄 ${showTimeSinceLastLeaderboard ? 'Time Since Last Ran' : 'Runs Since Last Ran'}`;
     
     // Update only the column instead of refreshing the whole table
     updateLeaderboardSinceLastColumn();
@@ -170,8 +193,8 @@ function fetchLeaderboardData() {
                 const gifPath = getGifPath(row.Pokemon, showShinyMessageAndAudio);
 
                 // Choose which value to display based on current toggle state
-                const sinceLastValue = showDaysSinceLastLeaderboard ? 
-                    (row["Days Since Last Ran"] || "") : 
+                const sinceLastValue = showTimeSinceLastLeaderboard ? 
+                    (row["Time Since Last Ran"] || "") : 
                     (row["Runs Since Last Ran"] || "");
 
                 const newRow = leaderboardTable.insertRow();
@@ -203,8 +226,8 @@ function fetchLast10Pokemon() {
                 const gifPath = getGifPath(entry.Pokemon, showShinyMessageAndAudio);
                 
                 // Choose which value to display based on current toggle state
-                const sinceLastValue = showDaysSinceLast ? 
-                    (entry["Days Since Last Ran"] || "") : 
+                const sinceLastValue = showTimeSinceLast ? 
+                    (entry["Time Since Last Ran"] || "") : 
                     (entry["Runs Since Last Ran"] || "");
 
                 const newRow = last10Table.insertRow();

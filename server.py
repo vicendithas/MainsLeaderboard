@@ -81,119 +81,191 @@ def add_entry():
     return jsonify({"success": True})
 
 
+def calculate_time_since(from_date, to_date):
+    """
+    Calculate the time difference between two dates and return a formatted string
+    in the format: 2yrs, 4mos, 8days
+    """
+    if not from_date or not to_date:
+        return "Never"
+    
+    # Ensure from_date is before to_date
+    if from_date > to_date:
+        from_date, to_date = to_date, from_date
+    
+    # Calculate total days first as a fallback
+    total_days = (to_date - from_date).days
+    
+    if total_days == 0:
+        return "0days"
+    
+    # Calculate years, months, and days properly
+    years = to_date.year - from_date.year
+    months = to_date.month - from_date.month
+    days = to_date.day - from_date.day
+    
+    # Adjust for negative days
+    if days < 0:
+        months -= 1
+        # Get the number of days in the previous month
+        if to_date.month == 1:
+            prev_month_year = to_date.year - 1
+            prev_month = 12
+        else:
+            prev_month_year = to_date.year
+            prev_month = to_date.month - 1
+        
+        # Calculate days in previous month
+        try:
+            from calendar import monthrange
+            days_in_prev_month = monthrange(prev_month_year, prev_month)[1]
+            days += days_in_prev_month
+        except:
+            # Fallback if calendar import fails
+            days += 30
+    
+    # Adjust for negative months
+    if months < 0:
+        years -= 1
+        months += 12
+    
+    # Format the result
+    parts = []
+    if years > 0:
+        parts.append(f"{years}yr{'s' if years != 1 else ''}")
+    if months > 0:
+        parts.append(f"{months}mo{'s' if months != 1 else ''}")
+    if days > 0:
+        parts.append(f"{days}day{'s' if days != 1 else ''}")
+    
+    if not parts:
+        return "0days"
+    
+    return ", ".join(parts)
+
+
 # Endpoint to fetch the leaderboard data
 @app.route("/leaderboard")
 def leaderboard():
-    rows = read_csv()
-    if not rows:
-        return jsonify([])  # Return an empty list if no data
+    try:
+        rows = read_csv()
+        if not rows:
+            return jsonify([])  # Return an empty list if no data
 
-    # Attach index to each row for stable sorting
-    for idx, row in enumerate(rows):
-        try:
-            row["_date_dt"] = datetime.strptime(row["Date"], "%m/%d/%Y")
-        except ValueError:
-            row["_date_dt"] = datetime.min
-        row["_csv_idx"] = idx
+        # Attach index to each row for stable sorting
+        for idx, row in enumerate(rows):
+            try:
+                row["_date_dt"] = datetime.strptime(row["Date"], "%m/%d/%Y")
+            except ValueError:
+                row["_date_dt"] = datetime.min
+            row["_csv_idx"] = idx
 
-    # Sort by date descending, then by CSV index descending (later rows first)
-    sorted_rows = sorted(rows, key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
+        # Sort by date descending, then by CSV index descending (later rows first)
+        sorted_rows = sorted(rows, key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
 
-    # Get today's date and the most recent entry date for calculations
-    today = datetime.now()
-    most_recent_entry_date = sorted_rows[0]["_date_dt"] if sorted_rows else today
-    most_recent_entry_idx = sorted_rows[0]["_csv_idx"] if sorted_rows else 0
+        # Get today's date and the most recent entry date for calculations
+        today = datetime.now()
+        most_recent_entry_date = sorted_rows[0]["_date_dt"] if sorted_rows else today
+        most_recent_entry_idx = sorted_rows[0]["_csv_idx"] if sorted_rows else 0
 
-    # Count occurrences of each Pokémon and track the last time ran
-    # We'll store data as { "Pikachu": {"count": x, "last_date": y, "last_idx": z}, ... }
-    data = {}
-    for row in rows:
-        pokemon = row["Pokemon"]
-        # Parse date string 'M/D/YYYY'
-        try:
-            run_date = datetime.strptime(row["Date"], "%m/%d/%Y")
-        except ValueError:
-            # Fallback if the date format is unexpected
-            # You could choose to ignore or handle differently
-            run_date = None
+        # Count occurrences of each Pokémon and track the last time ran
+        # We'll store data as { "Pikachu": {"count": x, "last_date": y, "last_idx": z}, ... }
+        data = {}
+        for row in rows:
+            pokemon = row["Pokemon"]
+            # Parse date string 'M/D/YYYY'
+            try:
+                run_date = datetime.strptime(row["Date"], "%m/%d/%Y")
+            except ValueError:
+                # Fallback if the date format is unexpected
+                # You could choose to ignore or handle differently
+                run_date = None
 
-        if pokemon not in data:
-            data[pokemon] = {
-                "count": 0,
-                "last_date": run_date,  # store a datetime for comparison
-                "last_idx": row["_csv_idx"],
-            }
-        data[pokemon]["count"] += 1
+            if pokemon not in data:
+                data[pokemon] = {
+                    "count": 0,
+                    "last_date": run_date,  # store a datetime for comparison
+                    "last_idx": row["_csv_idx"],
+                }
+            data[pokemon]["count"] += 1
 
-        # Update last_date to the max date encountered
-        if run_date and data[pokemon]["last_date"]:
-            if run_date > data[pokemon]["last_date"] or (run_date == data[pokemon]["last_date"] and row["_csv_idx"] > data[pokemon]["last_idx"]):
+            # Update last_date to the max date encountered
+            if run_date and data[pokemon]["last_date"]:
+                if run_date > data[pokemon]["last_date"] or (run_date == data[pokemon]["last_date"] and row["_csv_idx"] > data[pokemon]["last_idx"]):
+                    data[pokemon]["last_date"] = run_date
+                    data[pokemon]["last_idx"] = row["_csv_idx"]
+            elif run_date and not data[pokemon]["last_date"]:
                 data[pokemon]["last_date"] = run_date
                 data[pokemon]["last_idx"] = row["_csv_idx"]
-        elif run_date and not data[pokemon]["last_date"]:
-            data[pokemon]["last_date"] = run_date
-            data[pokemon]["last_idx"] = row["_csv_idx"]
 
-    # Convert the dictionary to a list of dicts for sorting
-    leaderboard_list = []
-    for pokemon, info in data.items():
-        last_date_dt = info["last_date"]
-        last_idx = info["last_idx"]
-        
-        # If we have a datetime, convert back to string
-        if last_date_dt:
-            date_str = last_date_dt.strftime("%m/%d/%Y")
-            # Remove leading zeros
-            date_str = re.sub(r"\b0(\d)", r"\1", date_str)
-        else:
-            date_str = ""  # or some fallback if no date
-
-        # Get BST from pokemon_bst dictionary with case-insensitive lookup
-        bst = get_pokemon_bst(pokemon)
-
-        # Calculate runs and days since last ran for this Pokemon
-        runs_since_last = None
-        days_since_last = None
-        
-        if last_date_dt:
-            # Days since last ran = days from today to the last time this Pokemon was run
-            days_since_last = (today - last_date_dt).days
+        # Convert the dictionary to a list of dicts for sorting
+        leaderboard_list = []
+        for pokemon, info in data.items():
+            last_date_dt = info["last_date"]
+            last_idx = info["last_idx"]
             
-            # Runs since last ran = entries from the most recent entry back to this Pokemon's last run
-            if last_date_dt == most_recent_entry_date and last_idx == most_recent_entry_idx:
-                # This Pokemon was the most recent entry, so 0 runs since
-                runs_since_last = 0
+            # If we have a datetime, convert back to string
+            if last_date_dt:
+                date_str = last_date_dt.strftime("%m/%d/%Y")
+                # Remove leading zeros
+                date_str = re.sub(r"\b0(\d)", r"\1", date_str)
             else:
-                # Count entries that occurred after this Pokemon's last run
-                runs_count = 0
-                for row in sorted_rows:
-                    # Entry must be after this Pokemon's last occurrence
-                    if (row["_date_dt"] > last_date_dt) or (row["_date_dt"] == last_date_dt and row["_csv_idx"] > last_idx):
-                        runs_count += 1
+                date_str = ""  # or some fallback if no date
+
+            # Get BST from pokemon_bst dictionary with case-insensitive lookup
+            bst = get_pokemon_bst(pokemon)
+
+            # Calculate runs and time since last ran for this Pokemon
+            runs_since_last = None
+            time_since_last = None
+            
+            if last_date_dt:
+                # Time since last ran = time from the last time this Pokemon was run to today
+                try:
+                    time_since_last = calculate_time_since(last_date_dt, today)
+                except Exception as e:
+                    print(f"Error calculating time since for {pokemon}: {e}")
+                    time_since_last = "Error"
                 
-                runs_since_last = runs_count
+                # Runs since last ran = entries from the most recent entry back to this Pokemon's last run
+                if last_date_dt == most_recent_entry_date and last_idx == most_recent_entry_idx:
+                    # This Pokemon was the most recent entry, so 0 runs since
+                    runs_since_last = 0
+                else:
+                    # Count entries that occurred after this Pokemon's last run
+                    runs_count = 0
+                    for row in sorted_rows:
+                        # Entry must be after this Pokemon's last occurrence
+                        if (row["_date_dt"] > last_date_dt) or (row["_date_dt"] == last_date_dt and row["_csv_idx"] > last_idx):
+                            runs_count += 1
+                    
+                    runs_since_last = runs_count
 
-        leaderboard_list.append(
-            {
-                "Pokemon": pokemon,
-                "Count": info["count"],
-                "Last Time Ran": date_str,
-                "BST": bst,
-                "Days Since Last Ran": str(days_since_last) if days_since_last is not None else "Never",
-                "Runs Since Last Ran": str(runs_since_last) if runs_since_last is not None else "Never",
-                # keep a separate field for sorting by datetime
-                "_last_date_dt": last_date_dt if last_date_dt else datetime.min,
-            }
-        )
+            leaderboard_list.append(
+                {
+                    "Pokemon": pokemon,
+                    "Count": info["count"],
+                    "Last Time Ran": date_str,
+                    "BST": bst,
+                    "Time Since Last Ran": time_since_last if time_since_last is not None else "Never",
+                    "Runs Since Last Ran": str(runs_since_last) if runs_since_last is not None else "Never",
+                    # keep a separate field for sorting by datetime
+                    "_last_date_dt": last_date_dt if last_date_dt else datetime.min,
+                }
+            )
 
-    # Sort by Count descending, then by Last Time Ran ascending
-    leaderboard_list.sort(key=lambda x: (-x["Count"], x["_last_date_dt"]))
+        # Sort by Count descending, then by Last Time Ran ascending
+        leaderboard_list.sort(key=lambda x: (-x["Count"], x["_last_date_dt"]))
 
-    # Remove the helper key
-    for item in leaderboard_list:
-        item.pop("_last_date_dt", None)
+        # Remove the helper key
+        for item in leaderboard_list:
+            item.pop("_last_date_dt", None)
 
-    return jsonify(leaderboard_list)
+        return jsonify(leaderboard_list)
+    
+    except Exception as e:
+        print(f"Error in leaderboard endpoint: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 # Endpoint to fetch the last 10 Pokémon ran
@@ -223,7 +295,7 @@ def last10():
         entry_idx = entry["_csv_idx"]
         pokemon = entry["Pokemon"]
 
-        prev_days = None
+        prev_time = None
         prev_runs = None
         
         # Search through ALL sorted rows (not just last 10) to find previous occurrence
@@ -234,7 +306,7 @@ def last10():
                 
             if rows[j]["Pokemon"] == pokemon:
                 prev_date = rows[j]["_date_dt"]
-                prev_days = (entry_date - prev_date).days
+                prev_time = calculate_time_since(prev_date, entry_date)
                 
                 # Count runs since last occurrence
                 # This counts entries that occurred after the previous occurrence but before current entry
@@ -251,10 +323,10 @@ def last10():
                 prev_runs = runs_count
                 break
         
-        if prev_days is not None and prev_days >= 0:
-            entry["Days Since Last Ran"] = str(prev_days)
+        if prev_time is not None:
+            entry["Time Since Last Ran"] = prev_time
         else:
-            entry["Days Since Last Ran"] = "Never"
+            entry["Time Since Last Ran"] = "Never"
             
         if prev_runs is not None:
             entry["Runs Since Last Ran"] = str(prev_runs)
