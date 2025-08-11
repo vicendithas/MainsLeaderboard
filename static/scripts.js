@@ -113,13 +113,50 @@ function toggleSinceLastColumn() {
     fetchLast10Pokemon();
 }
 
+function updateLeaderboardSinceLastColumn() {
+    const leaderboardTable = document.getElementById('leaderboard').getElementsByTagName('tbody')[0];
+    const rows = leaderboardTable.getElementsByTagName('tr');
+    
+    // We need to fetch the leaderboard data to get the current values
+    fetch('/leaderboard')
+        .then(response => response.json())
+        .then(data => {
+            // Create a lookup map: Pokemon name -> data
+            const pokemonDataMap = {};
+            data.forEach(row => {
+                pokemonDataMap[row.Pokemon] = row;
+            });
+            
+            // Update only the 6th column (index 5) for each row based on Pokemon name
+            for (let i = 0; i < rows.length; i++) {
+                // Get the Pokemon name from the current row (it's in the 2nd column, after the img tag)
+                const pokemonCell = rows[i].cells[1];
+                const pokemonName = pokemonCell.textContent.trim();
+                
+                // Find the corresponding data for this Pokemon
+                const pokemonData = pokemonDataMap[pokemonName];
+                if (pokemonData) {
+                    const sinceLastValue = showDaysSinceLastLeaderboard ? 
+                        (pokemonData["Days Since Last Ran"] || "") : 
+                        (pokemonData["Runs Since Last Ran"] || "");
+                    
+                    // Update only the last cell (column 5)
+                    rows[i].cells[5].textContent = sinceLastValue;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error updating leaderboard column:', error);
+        });
+}
+
 function toggleLeaderboardSinceLastColumn() {
     showDaysSinceLastLeaderboard = !showDaysSinceLastLeaderboard;
     const header = document.getElementById('leaderboardSinceLastHeader');
     header.innerHTML = `🔄 ${showDaysSinceLastLeaderboard ? 'Days Since Last Ran' : 'Runs Since Last Ran'}`;
     
-    // Refresh the Leaderboard table with the new column
-    fetchLeaderboardData();
+    // Update only the column instead of refreshing the whole table
+    updateLeaderboardSinceLastColumn();
 }
 
 function fetchLeaderboardData() {
@@ -264,9 +301,14 @@ function addEntry() {
     });
 }
 
-let sortOrder = [true, false, false, false, false, false]; // Track sort order for each column (added one more for new column)
+let sortOrder = [true, false, false, false, false]; // Track sort order for each column (added one more for new column)
 
 function sortTable(columnIndex) {
+    // Prevent sorting on the toggle column (index 5)
+    if (columnIndex === 5) {
+        return;
+    }
+    
     const table = document.getElementById('leaderboard');
     const tbody = table.getElementsByTagName('tbody')[0];
     const rows = Array.from(tbody.getElementsByTagName('tr'));
