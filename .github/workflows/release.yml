@@ -33,8 +33,8 @@ jobs:
           # Copy all contents from dist/server to MainsLeaderboard
           cp -r ./dist/server/* ./MainsLeaderboard/
           
-          # Create the zip file from the MainsLeaderboard directory
-          zip -r server.zip ./MainsLeaderboard
+          # Create the zip file from inside the MainsLeaderboard directory
+          cd ./MainsLeaderboard && zip -r ../server.zip . && cd ..
           
           # Move to dist directory for consistency with upload path
           mv server.zip dist/server.zip
