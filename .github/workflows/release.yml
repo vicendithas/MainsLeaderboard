@@ -29,16 +29,16 @@ jobs:
           
           # After this finishes, you should have a built EXE in your repo workspace folder
           # e.g., at .\bin\my-app.exe
-          ls -la ./dist
-          cp ./config.json ./dist/config.json
-          zip -9 server.zip ./dist/server.exe ./dist/config.json ./dist/_internal/
-          mv server.zip dist/server.zip
+          ls -la ./server
+          cp ./config.json ./server/config.json
+          zip -9 server.zip ./server/server.exe ./server/config.json ./server/_internal/
+          mv server.zip server/server.zip
           
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: mains-leaderboard
-          path: dist/server.zip  # adjust if your exe is in a different location
+          path: server/server.zip  # adjust if your exe is in a different location
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/server.zip
+          asset_path: server/server.zip
           asset_name: MainsLeaderboard.zip
           asset_content_type: application/zip
         env:
