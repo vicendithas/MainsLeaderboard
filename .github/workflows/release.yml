@@ -31,6 +31,7 @@ jobs:
           # e.g., at .\bin\my-app.exe
           cp ./config.json ./dist/server/config.json
           zip -9 server.zip ./dist/server/server.exe ./dist/server/config.json ./dist/server/_internal/
+          chmod 777 server.zip
           mv server.zip dist/server.zip
           
       - name: Upload build artifact
