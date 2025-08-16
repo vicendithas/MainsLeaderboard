@@ -32,13 +32,13 @@ jobs:
           ls -la ./server
           cp ./config.json ./server/config.json
           zip -9 server.zip ./server/server.exe ./server/config.json ./server/_internal/
-          mv server.zip server/server.zip
+          mv server.zip dist/server.zip
           
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: mains-leaderboard
-          path: server/server.zip  # adjust if your exe is in a different location
+          path: dist/server.zip  # adjust if your exe is in a different location
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
