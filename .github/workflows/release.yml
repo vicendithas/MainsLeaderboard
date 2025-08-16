@@ -30,7 +30,7 @@ jobs:
           # After this finishes, you should have a built EXE in your repo workspace folder
           # e.g., at .\bin\my-app.exe
           cp ./config.json ./dist/server/config.json
-          zip -9 server.zip ./dist/server/server.exe ./dist/server/config.json ./dist/server/_internal/
+          zip -9 -r server.zip ./dist/server/server.exe ./dist/server/config.json ./dist/server/_internal/
           mv server.zip dist/server.zip
           
       - name: Upload build artifact
