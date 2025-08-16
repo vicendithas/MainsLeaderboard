@@ -5,5 +5,7 @@ wine pyinstaller --noconfirm --onedir --console \
     --add-data "Z:\app\static;static/" \
     "Z:\app\server.py"
 
+ls -R
+
 chmod 777 /app/server/server.exe
 chmod 777 /app/server
