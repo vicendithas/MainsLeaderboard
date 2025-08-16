@@ -7,3 +7,4 @@ wine pyinstaller --noconfirm --onedir --console \
 
 chmod 777 /app/dist/server/server.exe
 chmod 777 /app/dist/server
+chmod 777 /app/dist
