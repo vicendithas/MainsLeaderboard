@@ -585,6 +585,41 @@ def get_pokemon_bst(pokemon_name):
     return 0
 
 
+@app.route("/pokemon_entries/<pokemon_name>")
+def pokemon_entries(pokemon_name):
+    """Get all entries for a specific Pokemon."""
+    rows = read_csv()
+    if not rows:
+        return jsonify([])
+    
+    # Filter entries for the specific Pokemon
+    pokemon_entries = []
+    for idx, row in enumerate(rows):
+        if row["Pokemon"].lower() == pokemon_name.lower():
+            try:
+                row_date = datetime.strptime(row["Date"], "%m/%d/%Y")
+            except ValueError:
+                row_date = datetime.min
+            
+            pokemon_entries.append({
+                "Pokemon": row["Pokemon"],
+                "Location": row["Location"], 
+                "Date": row["Date"],
+                "_date_dt": row_date,
+                "_csv_idx": idx
+            })
+    
+    # Sort by date descending, then by CSV index descending (most recent first)
+    pokemon_entries.sort(key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
+    
+    # Clean up the response
+    for entry in pokemon_entries:
+        entry.pop("_date_dt", None)
+        entry.pop("_csv_idx", None)
+    
+    return jsonify(pokemon_entries)
+
+
 if __name__ == "__main__":
     # Retrieve primary IP address
     import socket

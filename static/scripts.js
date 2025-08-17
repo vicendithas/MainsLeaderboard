@@ -202,7 +202,7 @@ function fetchLeaderboardData() {
                     `<td>${index + 1}</td>
                     <td>
                         <img src="${gifPath}" alt="${row.Pokemon}" class="pokemon-gif">
-                        ${row.Pokemon}
+                        <span class="pokemon-name-clickable" onclick="showPokemonEntries('${row.Pokemon.replace(/'/g, "\\'")}')">${row.Pokemon}</span>
                     </td>
                     <td>${row.BST}</td>
                     <td>${row.Count}</td>
@@ -214,6 +214,58 @@ function fetchLeaderboardData() {
             console.error('Error fetching leaderboard data:', error);
         });
 }
+
+function showPokemonEntries(pokemonName) {
+    fetch(`/pokemon_entries/${encodeURIComponent(pokemonName)}`)
+        .then(response => response.json())
+        .then(data => {
+            const modal = document.getElementById('pokemonModal');
+            const modalPokemonName = document.getElementById('modalPokemonName');
+            const modalTableBody = document.getElementById('modalEntriesTable').getElementsByTagName('tbody')[0];
+            
+            // Set the modal title
+            modalPokemonName.textContent = `${pokemonName} - All Entries (${data.length} total)`;
+            
+            // Clear existing entries
+            modalTableBody.innerHTML = '';
+            
+            // Add all entries to the modal table
+            data.forEach(entry => {
+                const newRow = modalTableBody.insertRow();
+                newRow.innerHTML = `
+                    <td>${entry.Date}</td>
+                    <td>${entry.Location}</td>
+                `;
+            });
+            
+            // Show the modal
+            modal.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error fetching Pokemon entries:', error);
+        });
+}
+
+// Modal close functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // ...existing code...
+    
+    // Add modal close handlers
+    const modal = document.getElementById('pokemonModal');
+    const closeBtn = document.querySelector('.close');
+    
+    // Close modal when clicking the X
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+    }
+    
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+});
 
 function fetchLast10Pokemon() {
     fetch('/last10')
