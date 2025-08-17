@@ -155,11 +155,50 @@ button:hover {
     padding: 20px;
     border: 1px solid #333333;
     width: fit-content;
-    min-width: 600px;
-    max-width: min(1200px, 85vw); /* Smaller of 1200px or 85% viewport */
+    min-width: 700px; /* Increased to accommodate location table */
+    max-width: min(1400px, 90vw); /* Increased max width */
     border-radius: 5px;
-    max-height: 80vh;
+    max-height: 85vh; /* Increased height slightly */
     overflow-y: auto;
+}
+
+/* Modal body layout */
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-section {
+    width: 100%;
+}
+
+.modal-section h3 {
+    margin: 0 0 10px 0;
+    color: #e0e0e0;
+    border-bottom: 1px solid #333333;
+    padding-bottom: 5px;
+}
+
+/* Location table styling */
+.modal-location-table {
+    width: 100%;
+    margin-bottom: 20px;
+    table-layout: auto;
+}
+
+.modal-location-table th,
+.modal-location-table td {
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.modal-location-table th:nth-child(2),
+.modal-location-table td:nth-child(2),
+.modal-location-table th:nth-child(3),
+.modal-location-table td:nth-child(3) {
+    text-align: center;
+    width: 80px;
 }
 
 /* Prevent background scroll when modal is open */
@@ -219,5 +258,13 @@ body.modal-open {
 .modal-header h2 {
     margin: 0;
     flex: 1;
+}
+
+/* Responsive layout for smaller screens */
+@media (max-width: 1200px) {
+    .modal-content {
+        width: 95vw;
+        min-width: 600px;
+    }
 }
 

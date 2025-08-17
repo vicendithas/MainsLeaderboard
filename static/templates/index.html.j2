@@ -111,18 +111,40 @@
                 <img id="modalPokemonGif" src="" alt="" class="modal-pokemon-gif">
                 <h2 id="modalPokemonName">Pokemon Entries</h2>
             </div>
-            <table id="modalEntriesTable" class="modal-entries-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Location</th>
-                        <th>Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Entries will be dynamically added here -->
-                </tbody>
-            </table>
+            
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>Location Distribution</h3>
+                    <table id="modalLocationTable" class="modal-location-table">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Location percentages will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>All Entries</h3>
+                    <table id="modalEntriesTable" class="modal-entries-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Entries will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </body>

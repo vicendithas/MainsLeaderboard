@@ -592,6 +592,8 @@ def pokemon_entries(pokemon_name):
     
     # Filter entries for the specific Pokemon
     pokemon_entries = []
+    location_counts = {}
+    
     for idx, row in enumerate(rows):
         if row["Pokemon"].lower() == pokemon_name.lower():
             try:
@@ -603,20 +605,43 @@ def pokemon_entries(pokemon_name):
                 "Pokemon": row["Pokemon"],
                 "Location": row["Location"], 
                 "Date": row["Date"],
-                "Notes": row.get("Notes", ""),  # Include notes, default to empty if not present
+                "Notes": row.get("Notes", ""),
                 "_date_dt": row_date,
                 "_csv_idx": idx
             })
+            
+            # Count locations for this Pokemon
+            location = row["Location"]
+            location_counts[location] = location_counts.get(location, 0) + 1
     
-    # Sort by date descending, then by CSV index descending (most recent first)
+    # Sort entries by date descending, then by CSV index descending (most recent first)
     pokemon_entries.sort(key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
+    
+    # Calculate location percentages
+    total_entries = len(pokemon_entries)
+    location_percentages = []
+    if total_entries > 0:
+        for location, count in location_counts.items():
+            percentage = (count / total_entries) * 100
+            location_percentages.append({
+                "location": location,
+                "count": count,
+                "percentage": percentage
+            })
+        
+        # Sort by count descending
+        location_percentages.sort(key=lambda x: x["count"], reverse=True)
     
     # Clean up the response
     for entry in pokemon_entries:
         entry.pop("_date_dt", None)
         entry.pop("_csv_idx", None)
     
-    return jsonify(pokemon_entries)
+    return jsonify({
+        "entries": pokemon_entries,
+        "location_percentages": location_percentages,
+        "total_entries": total_entries
+    })
 
 
 def ensure_notes_column():

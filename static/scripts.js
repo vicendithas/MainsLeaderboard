@@ -222,22 +222,34 @@ function showPokemonEntries(pokemonName) {
             const modal = document.getElementById('pokemonModal');
             const modalPokemonName = document.getElementById('modalPokemonName');
             const modalPokemonGif = document.getElementById('modalPokemonGif');
-            const modalTableBody = document.getElementById('modalEntriesTable').getElementsByTagName('tbody')[0];
+            const modalLocationTableBody = document.getElementById('modalLocationTable').getElementsByTagName('tbody')[0];
+            const modalEntriesTableBody = document.getElementById('modalEntriesTable').getElementsByTagName('tbody')[0];
             
             // Set the modal title
-            modalPokemonName.textContent = `${pokemonName} - All Entries (${data.length} total)`;
+            modalPokemonName.textContent = `${pokemonName} - All Entries (${data.total_entries} total)`;
             
             // Set the Pokemon GIF
             const gifPath = getGifPath(pokemonName, showShinyMessageAndAudio);
             modalPokemonGif.src = gifPath;
             modalPokemonGif.alt = pokemonName;
             
-            // Clear existing entries
-            modalTableBody.innerHTML = '';
+            // Clear existing content
+            modalLocationTableBody.innerHTML = '';
+            modalEntriesTableBody.innerHTML = '';
             
-            // Add all entries to the modal table
-            data.forEach(entry => {
-                const newRow = modalTableBody.insertRow();
+            // Populate location percentages table
+            data.location_percentages.forEach(locationData => {
+                const newRow = modalLocationTableBody.insertRow();
+                newRow.innerHTML = `
+                    <td>${locationData.location}</td>
+                    <td>${locationData.count}</td>
+                    <td>${locationData.percentage.toFixed(1)}%</td>
+                `;
+            });
+            
+            // Populate entries table
+            data.entries.forEach(entry => {
+                const newRow = modalEntriesTableBody.insertRow();
                 newRow.innerHTML = `
                     <td>${entry.Date}</td>
                     <td>${entry.Location}</td>
