@@ -202,3 +202,22 @@ body.modal-open {
     max-width: 400px; /* Prevent notes from getting too wide */
 }
 
+/* Modal header with Pokemon GIF */
+.modal-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.modal-pokemon-gif {
+    width: 64px;
+    height: 64px;
+    margin-right: 15px;
+    vertical-align: middle;
+}
+
+.modal-header h2 {
+    margin: 0;
+    flex: 1;
+}
+

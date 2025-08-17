@@ -221,10 +221,16 @@ function showPokemonEntries(pokemonName) {
         .then(data => {
             const modal = document.getElementById('pokemonModal');
             const modalPokemonName = document.getElementById('modalPokemonName');
+            const modalPokemonGif = document.getElementById('modalPokemonGif');
             const modalTableBody = document.getElementById('modalEntriesTable').getElementsByTagName('tbody')[0];
             
             // Set the modal title
             modalPokemonName.textContent = `${pokemonName} - All Entries (${data.length} total)`;
+            
+            // Set the Pokemon GIF
+            const gifPath = getGifPath(pokemonName, showShinyMessageAndAudio);
+            modalPokemonGif.src = gifPath;
+            modalPokemonGif.alt = pokemonName;
             
             // Clear existing entries
             modalTableBody.innerHTML = '';
