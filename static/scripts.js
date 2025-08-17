@@ -235,6 +235,7 @@ function showPokemonEntries(pokemonName) {
                 newRow.innerHTML = `
                     <td>${entry.Date}</td>
                     <td>${entry.Location}</td>
+                    <td>${entry.Notes || ''}</td>
                 `;
             });
             

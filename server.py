@@ -15,12 +15,6 @@ from bst import pokemon_bst
 # Path to the CSV file
 CSV_FILE = "pokemon_usage.csv"
 
-# Ensure the CSV file exists or create it if not
-if not os.path.exists(CSV_FILE):
-    with open(CSV_FILE, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["Pokemon", "Location", "Date"])
-        writer.writeheader()
-
 
 def read_csv():
     """Read the CSV_FILE and return a list of dictionaries for each row."""
@@ -28,6 +22,9 @@ def read_csv():
     with open(CSV_FILE, mode="r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
+            # Ensure Notes field exists for backward compatibility
+            if "Notes" not in row:
+                row["Notes"] = ""
             rows.append(row)
     return rows
 
@@ -35,7 +32,7 @@ def read_csv():
 def write_csv(rows):
     """Write the given list of dictionaries to CSV_FILE."""
     with open(CSV_FILE, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["Pokemon", "Location", "Date"])
+        writer = csv.DictWriter(f, fieldnames=["Pokemon", "Location", "Date", "Notes"])
         writer.writeheader()
         writer.writerows(rows)
 
@@ -62,6 +59,7 @@ def add_entry():
     pokemon = request.form["pokemon"]
     location = request.form["location"]
     date_str = request.form["date"]
+    notes = request.form.get("notes", "")  # Get notes, default to empty string if not provided
 
     # Convert 'YYYY-MM-DD' to 'M/D/YYYY' (no leading zeros)
     dt = datetime.strptime(date_str, "%Y-%m-%d")
@@ -73,7 +71,7 @@ def add_entry():
     rows = read_csv()
 
     # Append new entry
-    rows.append({"Pokemon": pokemon, "Location": location, "Date": date_formatted})
+    rows.append({"Pokemon": pokemon, "Location": location, "Date": date_formatted, "Notes": notes})
 
     # Write back to CSV
     write_csv(rows)
@@ -605,6 +603,7 @@ def pokemon_entries(pokemon_name):
                 "Pokemon": row["Pokemon"],
                 "Location": row["Location"], 
                 "Date": row["Date"],
+                "Notes": row.get("Notes", ""),  # Include notes, default to empty if not present
                 "_date_dt": row_date,
                 "_csv_idx": idx
             })
@@ -618,6 +617,54 @@ def pokemon_entries(pokemon_name):
         entry.pop("_csv_idx", None)
     
     return jsonify(pokemon_entries)
+
+
+def ensure_notes_column():
+    """Ensure the CSV file has a Notes column, adding it if missing."""
+    if not os.path.exists(CSV_FILE):
+        return  # File doesn't exist yet, will be created with Notes column
+    
+    # Read the first line to check headers
+    with open(CSV_FILE, mode="r", newline="", encoding="utf-8") as f:
+        first_line = f.readline().strip()
+        if not first_line:
+            return  # Empty file
+        
+        headers = first_line.split(',')
+        
+        # If Notes column already exists, we're good
+        if "Notes" in headers:
+            return
+    
+    # Notes column is missing, we need to add it
+    print("Notes column not found in CSV. Adding Notes column...")
+    
+    # Read all existing data
+    rows = []
+    with open(CSV_FILE, mode="r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Add empty Notes field to existing rows
+            row["Notes"] = ""
+            rows.append(row)
+    
+    # Write back with Notes column
+    with open(CSV_FILE, mode="w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["Pokemon", "Location", "Date", "Notes"])
+        writer.writeheader()
+        writer.writerows(rows)
+    
+    print(f"Successfully added Notes column to {CSV_FILE}")
+
+
+# Ensure the CSV file exists or create it if not, and ensure Notes column exists
+if not os.path.exists(CSV_FILE):
+    with open(CSV_FILE, mode="w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["Pokemon", "Location", "Date", "Notes"])
+        writer.writeheader()
+else:
+    # File exists, ensure it has the Notes column
+    ensure_notes_column()
 
 
 if __name__ == "__main__":

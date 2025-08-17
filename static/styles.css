@@ -58,6 +58,11 @@ form label, form input, form button {
     margin-bottom: 10px;
 }
 
+/* Notes input field styling */
+#notes {
+    min-width: 200px;
+}
+
 /* Table styles */
 table {
     width: 100%;
