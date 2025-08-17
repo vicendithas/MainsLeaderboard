@@ -161,6 +161,11 @@ button:hover {
     overflow-y: auto;
 }
 
+/* Prevent background scroll when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
 .close {
     color: #aaa;
     float: right;

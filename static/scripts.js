@@ -239,8 +239,9 @@ function showPokemonEntries(pokemonName) {
                 `;
             });
             
-            // Show the modal
+            // Show the modal and prevent background scrolling
             modal.style.display = 'block';
+            document.body.classList.add('modal-open');
         })
         .catch(error => {
             console.error('Error fetching Pokemon entries:', error);
@@ -255,17 +256,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('pokemonModal');
     const closeBtn = document.querySelector('.close');
     
-    // Close modal when clicking the X
-    closeBtn.onclick = function() {
+    // Function to close modal and restore background scrolling
+    function closeModal() {
         modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
     }
+    
+    // Close modal when clicking the X
+    closeBtn.onclick = closeModal;
     
     // Close modal when clicking outside of it
     window.onclick = function(event) {
         if (event.target === modal) {
-            modal.style.display = 'none';
+            closeModal();
         }
     }
+    
+    // Close modal when pressing Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && modal.style.display === 'block') {
+            closeModal();
+        }
+    });
+    
+    // Prevent scroll propagation from modal content
+    const modalContent = document.querySelector('.modal-content');
+    modalContent.addEventListener('wheel', function(event) {
+        // Only prevent propagation if we're at the scroll limits
+        const isAtTop = modalContent.scrollTop === 0;
+        const isAtBottom = modalContent.scrollTop >= modalContent.scrollHeight - modalContent.clientHeight;
+        
+        if ((isAtTop && event.deltaY < 0) || (isAtBottom && event.deltaY > 0)) {
+            event.preventDefault();
+        }
+    });
 });
 
 function fetchLast10Pokemon() {
