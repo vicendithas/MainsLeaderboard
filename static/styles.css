@@ -154,8 +154,9 @@ button:hover {
     margin: 5% auto;
     padding: 20px;
     border: 1px solid #333333;
-    width: 80%;
-    max-width: 600px;
+    width: fit-content;
+    min-width: 600px;
+    max-width: min(1200px, 85vw); /* Smaller of 1200px or 85% viewport */
     border-radius: 5px;
     max-height: 80vh;
     overflow-y: auto;
@@ -192,11 +193,12 @@ body.modal-open {
 .modal-entries-table {
     width: 100%;
     margin-top: 15px;
+    table-layout: auto; /* Allow columns to size based on content */
 }
 
-.modal-entries-table th,
-.modal-entries-table td {
-    padding: 8px;
-    text-align: left;
+/* Allow notes column to wrap if needed */
+.modal-entries-table td:last-child {
+    word-wrap: break-word;
+    max-width: 400px; /* Prevent notes from getting too wide */
 }
 
