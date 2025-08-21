@@ -391,11 +391,30 @@ function fetchLongestStreak() {
 }
 
 function addEntry() {
-    const formData = new FormData(document.getElementById('entryForm'));
+    const form = document.getElementById('entryForm');
+    const formData = new FormData(form);
+    
+    // Trim whitespace from form fields before sending
+    const pokemon = formData.get('pokemon').trim();
+    const location = formData.get('location').trim();
+    const notes = formData.get('notes').trim();
+    
+    // Check if required fields are empty after trimming
+    if (!pokemon || !location) {
+        document.getElementById('message').textContent = 'Pokemon and Location are required.';
+        return;
+    }
+    
+    // Create new FormData with trimmed values
+    const trimmedFormData = new FormData();
+    trimmedFormData.append('pokemon', pokemon);
+    trimmedFormData.append('location', location);
+    trimmedFormData.append('date', formData.get('date'));
+    trimmedFormData.append('notes', notes);
 
     fetch('/add_entry', {
         method: 'POST',
-        body: formData
+        body: trimmedFormData
     })
     .then(response => response.json())
     .then(data => {

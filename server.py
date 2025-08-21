@@ -56,10 +56,10 @@ def index():
 # Endpoint to add a new entry
 @app.route("/add_entry", methods=["POST"])
 def add_entry():
-    pokemon = request.form["pokemon"]
-    location = request.form["location"]
+    pokemon = request.form["pokemon"].strip()  # Remove leading/trailing whitespace
+    location = request.form["location"].strip()  # Remove leading/trailing whitespace
     date_str = request.form["date"]
-    notes = request.form.get("notes", "")  # Get notes, default to empty string if not provided
+    notes = request.form.get("notes", "").strip()  # Also trim notes
 
     # Convert 'YYYY-MM-DD' to 'M/D/YYYY' (no leading zeros)
     dt = datetime.strptime(date_str, "%Y-%m-%d")
