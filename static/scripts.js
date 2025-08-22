@@ -39,8 +39,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function sanitizeFilename(name) {
-    // Convert to lowercase and replace spaces with underscores
-    return name.toLowerCase().replace(/ /g, '_');
+    // Convert to lowercase
+	// replace spaces with underscores (ex. Mr. Mime)
+	// remove single quote (ex. Farfetch'd)
+    return name.toLowerCase().replace(/ /g, '_').replace(/'/g, '');
 }
 
 function getGifPath(pokemonName, shinyCheckCallback) {
