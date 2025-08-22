@@ -6,23 +6,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(cfg => {
             shinyOdds = cfg.shiny_odds || 8192;
-            fetchTotalPokemon();
-            fetchAverageBst();
-            fetchLeaderboardData();
-            fetchLast10Pokemon();
-            fetchLocationPercentages();
-            fetchCurrentStreak(); // <-- Updated line
-            fetchLongestStreak(); // <-- Added line
-			fetchPokemonOptions();
-
-            document.getElementById('entryForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-                addEntry();
-            });
         })
         .catch(() => {
             // If config fetch fails, use default odds
-            fetchTotalPokemon();
+        })
+		.finally(() => {
+			fetchTotalPokemon();
             fetchAverageBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
@@ -30,12 +19,13 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchCurrentStreak(); // <-- Updated line
             fetchLongestStreak(); // <-- Added line
 			fetchPokemonOptions();
+			setDefaultDate();
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
                 addEntry();
             });
-        });
+		});
 });
 
 function sanitizeFilename(name) {
@@ -55,25 +45,37 @@ function getGifPath(pokemonName, shinyCheckCallback) {
 }
 
 let shinyMessageShown = false;
+let volume = 0.5;
 
 function showShinyMessageAndAudio() {
     if (!shinyMessageShown) {
-        shinyMessageShown = true;
-        const messageElem = document.getElementById('message');
-        if (messageElem) {
-            messageElem.textContent = '✨ A shiny Pokémon appeared! ✨';
-        }
-        const audio = new Audio('/static/shiny.mp3');
-        audio.play().catch(() => {
-            if (messageElem) {
-                messageElem.textContent += ' (Click anywhere to hear the shiny sound!)';
-            }
-            const playShinyAudio = () => {
-                audio.play();
-                document.removeEventListener('click', playShinyAudio);
-            };
-            document.addEventListener('click', playShinyAudio);
-        });
+        fetch('/config')
+			.then(response => response.json())
+			.then(cfg => {
+				volume = cfg.volume;
+			})
+			.catch(() => {
+				// If config fetch fails, use default volume
+			})
+			.finally(() => {
+				shinyMessageShown = true;
+				const messageElem = document.getElementById('message');
+				if (messageElem) {
+					messageElem.textContent = '✨ A shiny Pokémon appeared! ✨';
+				}
+				const audio = new Audio('/static/shiny.mp3');
+				audio.volume = volume;
+				audio.play().catch(() => {
+					if (messageElem) {
+						messageElem.textContent += ' (Click anywhere to hear the shiny sound!)';
+					}
+					const playShinyAudio = () => {
+						audio.play();
+						document.removeEventListener('click', playShinyAudio);
+					};
+					document.addEventListener('click', playShinyAudio);
+				});
+			});
     }
 }
 
@@ -407,6 +409,10 @@ function fetchPokemonOptions() {
         .catch(error => {
             console.error('Error fetching Pokemon Options:', error);
         });
+}
+
+function setDefaultDate() {
+	document.getElementById('date').defaultValue = new Date().toISOString().slice(0, -14);
 }
 
 function addEntry() {
