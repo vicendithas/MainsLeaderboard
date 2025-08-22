@@ -31,7 +31,10 @@
         </div>
         <form id="entryForm">
             <label for="pokemon">Pokemon:</label>
-            <input type="text" id="pokemon" name="pokemon" required>
+            <input type="text" id="pokemon" name="pokemon" list="pokemon_dataset" required>
+			<datalist id="pokemon_dataset">
+				<!-- Rows will be dynamically added here -->
+			</datalist>
             <br>
             <label for="location">Location:</label>
             <input type="text" id="location" name="location" required>

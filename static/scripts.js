@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchLocationPercentages();
             fetchCurrentStreak(); // <-- Updated line
             fetchLongestStreak(); // <-- Added line
+			fetchPokemonOptions();
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -28,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchLocationPercentages();
             fetchCurrentStreak(); // <-- Updated line
             fetchLongestStreak(); // <-- Added line
+			fetchPokemonOptions();
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -387,6 +389,23 @@ function fetchLongestStreak() {
         .catch(error => {
             console.error('Error fetching longest streak:', error);
             document.getElementById('longestStreak').textContent = 'Longest Streak: Error loading data.';
+        });
+}
+
+function fetchPokemonOptions() {
+	fetch('/bst')
+		.then(response => response.json())
+        .then(data => {
+            const pokemonOptions = document.getElementById('pokemon_dataset');
+
+            data.forEach(entry => {
+                const newOption = document.createElement('option');
+                newOption.value = entry.Pokemon;
+				pokemonOptions.appendChild(newOption);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching Pokemon Options:', error);
         });
 }
 

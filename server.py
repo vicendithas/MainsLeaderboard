@@ -341,6 +341,20 @@ def last10():
 
     return jsonify(last_10)
 
+# Endpoint to fetch all valid Pokemon and their BST
+@app.route("/bst")
+def pokemon_options():
+	rows = []
+	
+	for pokemon_val, bst_val in pokemon_bst.items():
+		curr_row = {}
+		curr_row["Pokemon"] = pokemon_val
+		curr_row["BST"] = bst_val
+		rows.append(curr_row)
+		
+	sorted_by_name = sorted(rows, key=lambda x: x["Pokemon"])	
+	
+	return jsonify(sorted_by_name)
 
 # Endpoint to fetch location percentages
 @app.route("/location_percentages")
