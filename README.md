@@ -24,7 +24,8 @@ Clone the repository with the following command:
 
 Install the required dependencies. Use a virtual environment if you wish:
 
-`pip install flask waitress`
+`cd MainsLeaderboard`
+`pip install -r requirements.txt`
 
 
 # Run
