@@ -411,11 +411,12 @@ function fetchPokemonOptions() {
         });
 }
 
+
 function setDefaultDate() {
 	document.getElementById('date').defaultValue = new Date().toISOString().slice(0, -14);
 }
 
-function addEntry() {
+async function addEntry() {
     const form = document.getElementById('entryForm');
     const formData = new FormData(form);
     
@@ -437,30 +438,40 @@ function addEntry() {
     trimmedFormData.append('date', formData.get('date'));
     trimmedFormData.append('notes', notes);
 
-    fetch('/add_entry', {
-        method: 'POST',
-        body: trimmedFormData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            fetchTotalPokemon(); // Update the total Pokemon count
-            fetchAverageBst(); // Update the average BST
-            fetchLeaderboardData();
-            fetchLast10Pokemon();
-            fetchLocationPercentages();
-            fetchCurrentStreak(); // <-- Updated line
-            fetchLongestStreak(); // <-- Added line
-            document.getElementById('entryForm').reset();
-            document.getElementById('message').textContent = 'Entry added successfully.';
-        } else {
-            document.getElementById('message').textContent = 'Failed to add entry.';
-        }
-    })
-    .catch(error => {
-        console.error('Error adding new entry:', error);
-        document.getElementById('message').textContent = 'Error adding new entry.';
-    });
+	const bst_response = await fetch('/bst');
+	const bst_json = await bst_response.json();
+	const validPokemon = bst_json.find(item => item.Pokemon === pokemon);
+	
+	if (validPokemon) {
+		fetch('/add_entry', {
+			method: 'POST',
+			body: trimmedFormData
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				fetchTotalPokemon(); // Update the total Pokemon count
+				fetchAverageBst(); // Update the average BST
+				fetchLeaderboardData();
+				fetchLast10Pokemon();
+				fetchLocationPercentages();
+				fetchCurrentStreak(); // <-- Updated line
+				fetchLongestStreak(); // <-- Added line
+				document.getElementById('entryForm').reset();
+				document.getElementById('message').textContent = 'Entry added successfully.';
+			} else {
+				document.getElementById('message').textContent = 'Failed to add entry.';
+			}
+		})
+		.catch(error => {
+			console.error('Error adding new entry:', error);
+			document.getElementById('message').textContent = 'Error adding new entry.';
+		});
+	} else {
+		console.error('Invalid Pokemon Entered');
+		document.getElementById('message').textContent = 'Invalid Pokemon Entered';
+	}
+	
 }
 
 let sortOrder = [true, false, false, false, false]; // Track sort order for each column (added one more for new column)
