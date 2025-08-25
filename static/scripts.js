@@ -6,23 +6,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(cfg => {
             shinyOdds = cfg.shiny_odds || 8192;
-            fetchTotalPokemon();
-            fetchAverageBst();
-            fetchLeaderboardData();
-            fetchLast10Pokemon();
-            fetchLocationPercentages();
-            fetchCurrentStreak(); // <-- Updated line
-            fetchLongestStreak(); // <-- Added line
-			fetchPokemonOptions();
-
-            document.getElementById('entryForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-                addEntry();
-            });
         })
         .catch(() => {
             // If config fetch fails, use default odds
-            fetchTotalPokemon();
+        })
+		.finally(() => {
+			fetchTotalPokemon();
             fetchAverageBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
@@ -30,17 +19,20 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchCurrentStreak(); // <-- Updated line
             fetchLongestStreak(); // <-- Added line
 			fetchPokemonOptions();
+			setDefaultDate();
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
                 addEntry();
             });
-        });
+		});
 });
 
 function sanitizeFilename(name) {
-    // Convert to lowercase and replace spaces with underscores
-    return name.toLowerCase().replace(/ /g, '_');
+    // Convert to lowercase
+	// replace spaces with underscores (ex. Mr. Mime)
+	// remove single quote (ex. Farfetch'd)
+    return name.toLowerCase().replace(/ /g, '_').replace(/'/g, '');
 }
 
 function getGifPath(pokemonName, shinyCheckCallback) {
@@ -55,25 +47,37 @@ function getGifPath(pokemonName, shinyCheckCallback) {
 }
 
 let shinyMessageShown = false;
+let volume = 0.5;
 
 function showShinyMessageAndAudio() {
     if (!shinyMessageShown) {
-        shinyMessageShown = true;
-        const messageElem = document.getElementById('message');
-        if (messageElem) {
-            messageElem.textContent = '✨ A shiny Pokémon appeared! ✨';
-        }
-        const audio = new Audio('/static/shiny.mp3');
-        audio.play().catch(() => {
-            if (messageElem) {
-                messageElem.textContent += ' (Click anywhere to hear the shiny sound!)';
-            }
-            const playShinyAudio = () => {
-                audio.play();
-                document.removeEventListener('click', playShinyAudio);
-            };
-            document.addEventListener('click', playShinyAudio);
-        });
+        fetch('/config')
+			.then(response => response.json())
+			.then(cfg => {
+				volume = cfg.volume;
+			})
+			.catch(() => {
+				// If config fetch fails, use default volume
+			})
+			.finally(() => {
+				shinyMessageShown = true;
+				const messageElem = document.getElementById('message');
+				if (messageElem) {
+					messageElem.textContent = '✨ A shiny Pokémon appeared! ✨';
+				}
+				const audio = new Audio('/static/shiny.mp3');
+				audio.volume = volume;
+				audio.play().catch(() => {
+					if (messageElem) {
+						messageElem.textContent += ' (Click anywhere to hear the shiny sound!)';
+					}
+					const playShinyAudio = () => {
+						audio.play();
+						document.removeEventListener('click', playShinyAudio);
+					};
+					document.addEventListener('click', playShinyAudio);
+				});
+			});
     }
 }
 
@@ -409,7 +413,12 @@ function fetchPokemonOptions() {
         });
 }
 
-function addEntry() {
+
+function setDefaultDate() {
+	document.getElementById('date').defaultValue = new Date().toISOString().slice(0, -14);
+}
+
+async function addEntry() {
     const form = document.getElementById('entryForm');
     const formData = new FormData(form);
     
@@ -431,30 +440,40 @@ function addEntry() {
     trimmedFormData.append('date', formData.get('date'));
     trimmedFormData.append('notes', notes);
 
-    fetch('/add_entry', {
-        method: 'POST',
-        body: trimmedFormData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            fetchTotalPokemon(); // Update the total Pokemon count
-            fetchAverageBst(); // Update the average BST
-            fetchLeaderboardData();
-            fetchLast10Pokemon();
-            fetchLocationPercentages();
-            fetchCurrentStreak(); // <-- Updated line
-            fetchLongestStreak(); // <-- Added line
-            document.getElementById('entryForm').reset();
-            document.getElementById('message').textContent = 'Entry added successfully.';
-        } else {
-            document.getElementById('message').textContent = 'Failed to add entry.';
-        }
-    })
-    .catch(error => {
-        console.error('Error adding new entry:', error);
-        document.getElementById('message').textContent = 'Error adding new entry.';
-    });
+	const bst_response = await fetch('/bst');
+	const bst_json = await bst_response.json();
+	const validPokemon = bst_json.find(item => item.Pokemon === pokemon);
+	
+	if (validPokemon) {
+		fetch('/add_entry', {
+			method: 'POST',
+			body: trimmedFormData
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				fetchTotalPokemon(); // Update the total Pokemon count
+				fetchAverageBst(); // Update the average BST
+				fetchLeaderboardData();
+				fetchLast10Pokemon();
+				fetchLocationPercentages();
+				fetchCurrentStreak(); // <-- Updated line
+				fetchLongestStreak(); // <-- Added line
+				document.getElementById('entryForm').reset();
+				document.getElementById('message').textContent = 'Entry added successfully.';
+			} else {
+				document.getElementById('message').textContent = 'Failed to add entry.';
+			}
+		})
+		.catch(error => {
+			console.error('Error adding new entry:', error);
+			document.getElementById('message').textContent = 'Error adding new entry.';
+		});
+	} else {
+		console.error('Invalid Pokemon Entered');
+		document.getElementById('message').textContent = 'Invalid Pokemon Entered';
+	}
+	
 }
 
 let sortOrder = [true, false, false, false, false]; // Track sort order for each column (added one more for new column)

@@ -1,10 +1,9 @@
 *.csv
-*.txt
 .venv*
 archive*
 __pycache__*
 TODO
 docker
-.vscode
+.vscode/
 scraper/*.sav
 scraper/*.csv

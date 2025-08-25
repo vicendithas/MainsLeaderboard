@@ -1,5 +1,6 @@
 {
     "title": "Mains Leaderboard",
     "port": 8080,
-    "shiny_odds": 8192
+    "shiny_odds": 8192,
+    "volume": 0.5
 }
