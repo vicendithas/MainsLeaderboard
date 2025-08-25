@@ -48,6 +48,7 @@ function getGifPath(pokemonName, shinyCheckCallback) {
 
 let shinyMessageShown = false;
 let volume = 0.5;
+let shinyAudioClickListenerAdded = false; // Add this flag
 
 function showShinyMessageAndAudio() {
     if (!shinyMessageShown) {
@@ -71,13 +72,21 @@ function showShinyMessageAndAudio() {
 					if (messageElem) {
 						messageElem.textContent += ' (Click anywhere to hear the shiny sound!)';
 					}
-					const playShinyAudio = () => {
-						audio.play();
-						document.removeEventListener('click', playShinyAudio);
-					};
-					document.addEventListener('click', playShinyAudio);
+					
+					// Only add the click listener once
+					if (!shinyAudioClickListenerAdded) {
+						shinyAudioClickListenerAdded = true;
+						const playShinyAudio = () => {
+							const newAudio = new Audio('/static/shiny.mp3');
+							newAudio.volume = volume;
+							newAudio.play();
+							document.removeEventListener('click', playShinyAudio);
+							shinyAudioClickListenerAdded = false; // Reset flag when listener is removed
+						};
+						document.addEventListener('click', playShinyAudio);
+					}
 				});
-			});
+            });
     }
 }
 
