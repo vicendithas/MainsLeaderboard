@@ -37,14 +37,21 @@ def write_csv(rows):
         writer.writerows(rows)
 
 
-# Load config
+# Load config and write config file if it doesn't exist
 CONFIG_FILE = "config.json"
-DEFAULT_CONFIG = {"title": "Cinco Bingo Mains Leaderboard", "port": 8080}
+DEFAULT_CONFIG = {
+	"title": "Cinco Bingo Mains Leaderboard",
+	"port": 8080,
+	"shiny_odds": 8192,
+	"volume": 0.5
+	}
 if os.path.exists(CONFIG_FILE):
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         config = json.load(f)
 else:
     config = DEFAULT_CONFIG
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        f.write(json.dumps(DEFAULT_CONFIG))
 
 
 # Serve index.html from the /static directory
@@ -392,8 +399,11 @@ def total_pokemon():
 
 @app.route("/config")
 def get_config():
-    # Only return the shiny_odds field for the frontend
-    return jsonify({"shiny_odds": config.get("shiny_odds", 8192)})
+    # Only return the shiny_odds and volume fields for the frontend
+    return jsonify({
+		"shiny_odds": config.get("shiny_odds", 8192),
+		"volume": config.get("volume", 0.5)
+		})
 
 
 @app.route("/last_pokemon")
