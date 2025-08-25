@@ -37,7 +37,9 @@ def write_csv(rows):
         writer.writerows(rows)
 
 
-# Load config and write config file if it doesn't exist
+# Load config and create config file with defaults if it doesn't exist
+# Write config options to file if they don't exist
+# Prints a mesasge and uses defaults if the config file is malformed
 CONFIG_FILE = "config.json"
 DEFAULT_CONFIG = {
 	"title": "Cinco Bingo Mains Leaderboard",
@@ -46,8 +48,19 @@ DEFAULT_CONFIG = {
 	"volume": 0.5
 	}
 if os.path.exists(CONFIG_FILE):
-    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-        config = json.load(f)
+	with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+		try:
+			config = json.load(f)
+		
+			for key in DEFAULT_CONFIG.keys():
+				if key not in config:
+					config[key] = DEFAULT_CONFIG[key]
+					with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+						f.write(json.dumps(config))
+		except:
+			print("config.json cannot be read. Using default values.\n")
+			config = DEFAULT_CONFIG
+
 else:
     config = DEFAULT_CONFIG
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
