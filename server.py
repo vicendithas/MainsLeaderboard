@@ -47,24 +47,20 @@ DEFAULT_CONFIG = {
 	"shiny_odds": 8192,
 	"volume": 0.5
 	}
-if os.path.exists(CONFIG_FILE):
-	with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-		try:
-			config = json.load(f)
-		
-			for key in DEFAULT_CONFIG.keys():
-				if key not in config:
-					config[key] = DEFAULT_CONFIG[key]
-					with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-						f.write(json.dumps(config))
-		except:
-			print("config.json cannot be read. Using default values.\n")
-			config = DEFAULT_CONFIG
 
-else:
-    config = DEFAULT_CONFIG
-    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        f.write(json.dumps(DEFAULT_CONFIG))
+
+# Check if any keys are missing and add defaults
+config_updated = False
+config = json.load(open(CONFIG_FILE, "r", encoding="utf-8")) if os.path.exists(CONFIG_FILE) else {}
+for key, default_value in DEFAULT_CONFIG.items():
+    if key not in config:
+        config[key] = default_value
+        config_updated = True
+
+# Write back to file if config was updated
+if config_updated:
+    with open('config.json', 'w') as config_file:
+        json.dump(config, config_file, indent=4)  # Added indent=4 for pretty formatting
 
 
 # Serve index.html from the /static directory
