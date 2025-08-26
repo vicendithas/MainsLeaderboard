@@ -42,7 +42,7 @@ def write_csv(rows):
 # Prints a mesasge and uses defaults if the config file is malformed
 CONFIG_FILE = "config.json"
 DEFAULT_CONFIG = {
-    "title": "Cinco Bingo Mains Leaderboard",
+    "title": "Mains Leaderboard",
     "port": 8080,
     "shiny_odds": 8192,
     "volume": 0.5
