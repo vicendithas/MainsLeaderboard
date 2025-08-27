@@ -3,9 +3,7 @@
 archive*
 __pycache__*
 TODO
-Dockerfile
-compose.yaml
-README.Docker.md
+docker
 .vscode/
 scraper/*.sav
 scraper/*.csv
