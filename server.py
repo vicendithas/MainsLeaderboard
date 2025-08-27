@@ -42,16 +42,32 @@ def write_csv(rows):
 # Prints a mesasge and uses defaults if the config file is malformed
 CONFIG_FILE = "config.json"
 DEFAULT_CONFIG = {
-	"title": "Cinco Bingo Mains Leaderboard",
-	"port": 8080,
-	"shiny_odds": 8192,
-	"volume": 0.5
-	}
+    "title": "Mains Leaderboard",
+    "port": 8080,
+    "shiny_odds": 8192,
+    "volume": 0.5
+    }
 
+# Check if config file exists and load it, handling empty/malformed files
+config = {}
+if os.path.exists(CONFIG_FILE):
+    try:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if content:  # Only try to parse if file is not empty
+                config = json.loads(content)
+            else:
+                print(f"Warning: {CONFIG_FILE} is empty. Using default configuration.")
+                config = {}
+    except json.JSONDecodeError as e:
+        print(f"Warning: {CONFIG_FILE} contains invalid JSON: {e}. Using default configuration.")
+        config = {}
+    except Exception as e:
+        print(f"Warning: Error reading {CONFIG_FILE}: {e}. Using default configuration.")
+        config = {}
 
 # Check if any keys are missing and add defaults
 config_updated = False
-config = json.load(open(CONFIG_FILE, "r", encoding="utf-8")) if os.path.exists(CONFIG_FILE) else {}
 for key, default_value in DEFAULT_CONFIG.items():
     if key not in config:
         config[key] = default_value
