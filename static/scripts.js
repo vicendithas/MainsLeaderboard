@@ -28,6 +28,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 });
 
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 function sanitizeFilename(name) {
     // Convert to lowercase
 	// replace spaces with underscores (ex. Mr. Mime)
@@ -255,8 +264,9 @@ function showPokemonEntries(pokemonName) {
             // Populate location percentages table
             data.location_percentages.forEach(locationData => {
                 const newRow = modalLocationTableBody.insertRow();
-                newRow.innerHTML = `
-                    <td>${locationData.location}</td>
+                const saniLocation = escapeHtml(locationData.location);
+				newRow.innerHTML = `
+                    <td>${saniLocation}</td>
                     <td>${locationData.count}</td>
                     <td>${locationData.percentage.toFixed(1)}%</td>
                 `;
@@ -265,10 +275,12 @@ function showPokemonEntries(pokemonName) {
             // Populate entries table
             data.entries.forEach(entry => {
                 const newRow = modalEntriesTableBody.insertRow();
+				const saniLocation = escapeHtml(entry.Location);
+				const saniNotes = escapeHtml(entry.Notes || '');
                 newRow.innerHTML = `
                     <td>${entry.Date}</td>
-                    <td>${entry.Location}</td>
-                    <td>${entry.Notes || ''}</td>
+                    <td>${saniLocation}</td>
+                    <td>${saniNotes}</td>
                 `;
             });
             
@@ -341,13 +353,14 @@ function fetchLast10Pokemon() {
                     (entry["Runs Since Last Ran"] || "");
 
                 const newRow = last10Table.insertRow();
+				const saniLocation = escapeHtml(entry.Location);
                 newRow.innerHTML = 
                     `<td>
                         <img src="${gifPath}" alt="${entry.Pokemon}" class="pokemon-gif">
                         ${entry.Pokemon}
                     </td>
                     <td>${entry.Date}</td>
-                    <td>${entry.Location}</td>
+                    <td>${saniLocation}</td>
                     <td>${sinceLastValue}</td>`;
             });
         })
@@ -365,8 +378,9 @@ function fetchLocationPercentages() {
 
             data.forEach(entry => {
                 const newRow = locationPercentagesTable.insertRow();
+				const saniLocation = escapeHtml(entry.Location);
                 newRow.innerHTML = 
-                    `<td>${entry.Location}</td>
+                    `<td>${saniLocation}</td>
                     <td>${entry.Percentage.toFixed(2)}%</td>`;
             });
         })
