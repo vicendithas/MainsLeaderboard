@@ -1,4 +1,4 @@
-wine pip install flask waitress 
+wine pip install -r requirements.txt 
 
 wine pyinstaller --noconfirm --onedir --console \
     --icon "Z:\app\static\favicon.ico" \
