@@ -577,3 +577,23 @@ function sortTable(columnIndex) {
     });
 }
 
+function fetchMaxRunsPerDay() {
+    fetch('/max_runs_per_day')
+        .then(response => response.json())
+        .then(data => {
+            const maxRunsDiv = document.getElementById('maxRunsPerDay');
+            if (data.max_runs && data.date) {
+                maxRunsDiv.textContent = `Most Runs in a Day: ${data.max_runs} (${data.date})`;
+            } else {
+                maxRunsDiv.textContent = 'Most Runs in a Day: N/A';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching max runs per day:', error);
+            document.getElementById('maxRunsPerDay').textContent = 'Most Runs in a Day: Error loading data.';
+        });
+}
+
+// In DOMContentLoaded, add:
+fetchMaxRunsPerDay();
+

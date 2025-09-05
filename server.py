@@ -45,8 +45,8 @@ DEFAULT_CONFIG = {
     "title": "Mains Leaderboard",
     "port": 8080,
     "shiny_odds": 8192,
-    "volume": 0.5
-    }
+    "volume": 0.5,
+}
 
 # Check if config file exists and load it, handling empty/malformed files
 config = {}
@@ -60,10 +60,14 @@ if os.path.exists(CONFIG_FILE):
                 print(f"Warning: {CONFIG_FILE} is empty. Using default configuration.")
                 config = {}
     except json.JSONDecodeError as e:
-        print(f"Warning: {CONFIG_FILE} contains invalid JSON: {e}. Using default configuration.")
+        print(
+            f"Warning: {CONFIG_FILE} contains invalid JSON: {e}. Using default configuration."
+        )
         config = {}
     except Exception as e:
-        print(f"Warning: Error reading {CONFIG_FILE}: {e}. Using default configuration.")
+        print(
+            f"Warning: Error reading {CONFIG_FILE}: {e}. Using default configuration."
+        )
         config = {}
 
 # Check if any keys are missing and add defaults
@@ -75,7 +79,7 @@ for key, default_value in DEFAULT_CONFIG.items():
 
 # Write back to file if config was updated
 if config_updated:
-    with open('config.json', 'w') as config_file:
+    with open("config.json", "w") as config_file:
         json.dump(config, config_file, indent=4)  # Added indent=4 for pretty formatting
 
 
@@ -103,7 +107,14 @@ def add_entry():
     rows = read_csv()
 
     # Append new entry
-    rows.append({"Pokemon": pokemon, "Location": location, "Date": date_formatted, "Notes": notes})
+    rows.append(
+        {
+            "Pokemon": pokemon,
+            "Location": location,
+            "Date": date_formatted,
+            "Notes": notes,
+        }
+    )
 
     # Write back to CSV
     write_csv(rows)
@@ -118,22 +129,22 @@ def calculate_time_since(from_date, to_date):
     """
     if not from_date or not to_date:
         return "Never"
-    
+
     # Ensure from_date is before to_date
     if from_date > to_date:
         from_date, to_date = to_date, from_date
-    
+
     # Calculate total days first as a fallback
     total_days = (to_date - from_date).days
-    
+
     if total_days == 0:
         return "0 days"
-    
+
     # Calculate years, months, and days properly
     years = to_date.year - from_date.year
     months = to_date.month - from_date.month
     days = to_date.day - from_date.day
-    
+
     # Adjust for negative days
     if days < 0:
         months -= 1
@@ -144,21 +155,22 @@ def calculate_time_since(from_date, to_date):
         else:
             prev_month_year = to_date.year
             prev_month = to_date.month - 1
-        
+
         # Calculate days in previous month
         try:
             from calendar import monthrange
+
             days_in_prev_month = monthrange(prev_month_year, prev_month)[1]
             days += days_in_prev_month
         except:
             # Fallback if calendar import fails
             days += 30
-    
+
     # Adjust for negative months
     if months < 0:
         years -= 1
         months += 12
-    
+
     # Format the result with spaces
     parts = []
     if years > 0:
@@ -167,10 +179,10 @@ def calculate_time_since(from_date, to_date):
         parts.append(f"{months} mo{'s' if months != 1 else ''}")
     if days > 0:
         parts.append(f"{days} day{'s' if days != 1 else ''}")
-    
+
     if not parts:
         return "0 days"
-    
+
     return ", ".join(parts)
 
 
@@ -191,7 +203,9 @@ def leaderboard():
             row["_csv_idx"] = idx
 
         # Sort by date descending, then by CSV index descending (later rows first)
-        sorted_rows = sorted(rows, key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
+        sorted_rows = sorted(
+            rows, key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True
+        )
 
         # Get today's date and the most recent entry date for calculations
         today = datetime.now()
@@ -221,7 +235,10 @@ def leaderboard():
 
             # Update last_date to the max date encountered
             if run_date and data[pokemon]["last_date"]:
-                if run_date > data[pokemon]["last_date"] or (run_date == data[pokemon]["last_date"] and row["_csv_idx"] > data[pokemon]["last_idx"]):
+                if run_date > data[pokemon]["last_date"] or (
+                    run_date == data[pokemon]["last_date"]
+                    and row["_csv_idx"] > data[pokemon]["last_idx"]
+                ):
                     data[pokemon]["last_date"] = run_date
                     data[pokemon]["last_idx"] = row["_csv_idx"]
             elif run_date and not data[pokemon]["last_date"]:
@@ -233,7 +250,7 @@ def leaderboard():
         for pokemon, info in data.items():
             last_date_dt = info["last_date"]
             last_idx = info["last_idx"]
-            
+
             # If we have a datetime, convert back to string
             if last_date_dt:
                 date_str = last_date_dt.strftime("%m/%d/%Y")
@@ -248,7 +265,7 @@ def leaderboard():
             # Calculate runs and time since last ran for this Pokemon
             runs_since_last = None
             time_since_last = None
-            
+
             if last_date_dt:
                 # Time since last ran = time from the last time this Pokemon was run to today
                 try:
@@ -256,9 +273,12 @@ def leaderboard():
                 except Exception as e:
                     print(f"Error calculating time since for {pokemon}: {e}")
                     time_since_last = "Error"
-                
+
                 # Runs since last ran = entries from the most recent entry back to this Pokemon's last run
-                if last_date_dt == most_recent_entry_date and last_idx == most_recent_entry_idx:
+                if (
+                    last_date_dt == most_recent_entry_date
+                    and last_idx == most_recent_entry_idx
+                ):
                     # This Pokemon was the most recent entry, so 0 runs since
                     runs_since_last = 0
                 else:
@@ -266,9 +286,12 @@ def leaderboard():
                     runs_count = 0
                     for row in sorted_rows:
                         # Entry must be after this Pokemon's last occurrence
-                        if (row["_date_dt"] > last_date_dt) or (row["_date_dt"] == last_date_dt and row["_csv_idx"] > last_idx):
+                        if (row["_date_dt"] > last_date_dt) or (
+                            row["_date_dt"] == last_date_dt
+                            and row["_csv_idx"] > last_idx
+                        ):
                             runs_count += 1
-                    
+
                     runs_since_last = runs_count
 
             leaderboard_list.append(
@@ -277,8 +300,12 @@ def leaderboard():
                     "Count": info["count"],
                     "Last Time Ran": date_str,
                     "BST": bst,
-                    "Time Since Last Ran": time_since_last if time_since_last is not None else "Never",
-                    "Runs Since Last Ran": str(runs_since_last) if runs_since_last is not None else "Never",
+                    "Time Since Last Ran": (
+                        time_since_last if time_since_last is not None else "Never"
+                    ),
+                    "Runs Since Last Ran": (
+                        str(runs_since_last) if runs_since_last is not None else "Never"
+                    ),
                     # keep a separate field for sorting by datetime
                     "_last_date_dt": last_date_dt if last_date_dt else datetime.min,
                 }
@@ -292,7 +319,7 @@ def leaderboard():
             item.pop("_last_date_dt", None)
 
         return jsonify(leaderboard_list)
-    
+
     except Exception as e:
         print(f"Error in leaderboard endpoint: {e}")
         return jsonify({"error": str(e)}), 500
@@ -327,37 +354,44 @@ def last10():
 
         prev_time = None
         prev_runs = None
-        
+
         # Search through ALL sorted rows (not just last 10) to find previous occurrence
         for j in range(len(rows)):
             # Skip entries that are not before the current entry
-            if rows[j]["_date_dt"] > entry_date or (rows[j]["_date_dt"] == entry_date and rows[j]["_csv_idx"] >= entry_idx):
+            if rows[j]["_date_dt"] > entry_date or (
+                rows[j]["_date_dt"] == entry_date and rows[j]["_csv_idx"] >= entry_idx
+            ):
                 continue
-                
+
             if rows[j]["Pokemon"] == pokemon:
                 prev_date = rows[j]["_date_dt"]
                 prev_time = calculate_time_since(prev_date, entry_date)
-                
+
                 # Count runs since last occurrence
                 # This counts entries that occurred after the previous occurrence but before current entry
                 runs_count = 0
                 for k in range(len(rows)):
                     row_date = rows[k]["_date_dt"]
                     row_idx = rows[k]["_csv_idx"]
-                    
+
                     # Entry must be after the previous occurrence but before current entry
-                    if ((row_date > prev_date) or (row_date == prev_date and row_idx > rows[j]["_csv_idx"])) and \
-                       ((row_date < entry_date) or (row_date == entry_date and row_idx < entry_idx)):
+                    if (
+                        (row_date > prev_date)
+                        or (row_date == prev_date and row_idx > rows[j]["_csv_idx"])
+                    ) and (
+                        (row_date < entry_date)
+                        or (row_date == entry_date and row_idx < entry_idx)
+                    ):
                         runs_count += 1
-                
+
                 prev_runs = runs_count
                 break
-        
+
         if prev_time is not None:
             entry["Time Since Last Ran"] = prev_time
         else:
             entry["Time Since Last Ran"] = "Never"
-            
+
         if prev_runs is not None:
             entry["Runs Since Last Ran"] = str(prev_runs)
         else:
@@ -373,20 +407,22 @@ def last10():
 
     return jsonify(last_10)
 
+
 # Endpoint to fetch all valid Pokemon and their BST
 @app.route("/bst")
 def pokemon_options():
-	rows = []
-	
-	for pokemon_val, bst_val in pokemon_bst.items():
-		curr_row = {}
-		curr_row["Pokemon"] = pokemon_val
-		curr_row["BST"] = bst_val
-		rows.append(curr_row)
-		
-	sorted_by_name = sorted(rows, key=lambda x: x["Pokemon"])	
-	
-	return jsonify(sorted_by_name)
+    rows = []
+
+    for pokemon_val, bst_val in pokemon_bst.items():
+        curr_row = {}
+        curr_row["Pokemon"] = pokemon_val
+        curr_row["BST"] = bst_val
+        rows.append(curr_row)
+
+    sorted_by_name = sorted(rows, key=lambda x: x["Pokemon"])
+
+    return jsonify(sorted_by_name)
+
 
 # Endpoint to fetch location percentages
 @app.route("/location_percentages")
@@ -425,10 +461,12 @@ def total_pokemon():
 @app.route("/config")
 def get_config():
     # Only return the shiny_odds and volume fields for the frontend
-    return jsonify({
-		"shiny_odds": config.get("shiny_odds", 8192),
-		"volume": config.get("volume", 0.5)
-		})
+    return jsonify(
+        {
+            "shiny_odds": config.get("shiny_odds", 8192),
+            "volume": config.get("volume", 0.5),
+        }
+    )
 
 
 @app.route("/last_pokemon")
@@ -488,7 +526,7 @@ def play_streak():
     # Start from the most recent date, count consecutive days
     streak = 1
     for i in range(1, len(sorted_dates)):
-        if (sorted_dates[i-1] - sorted_dates[i]).days == 1:
+        if (sorted_dates[i - 1] - sorted_dates[i]).days == 1:
             streak += 1
         else:
             break
@@ -527,7 +565,7 @@ def current_streak():
     # Start from the most recent date, count consecutive days
     streak = 1
     for i in range(1, len(sorted_dates)):
-        if (sorted_dates[i-1] - sorted_dates[i]).days == 1:
+        if (sorted_dates[i - 1] - sorted_dates[i]).days == 1:
             streak += 1
         else:
             break
@@ -565,7 +603,7 @@ def longest_streak():
     longest_end = sorted_dates[0]
 
     for i in range(1, len(sorted_dates)):
-        if (sorted_dates[i] - sorted_dates[i-1]).days == 1:
+        if (sorted_dates[i] - sorted_dates[i - 1]).days == 1:
             current += 1
             streak_end = sorted_dates[i]
             if current > longest:
@@ -583,11 +621,32 @@ def longest_streak():
     end_str = longest_end.strftime("%m/%d/%Y")
     end_str = re.sub(r"\b0(\d)", r"\1", end_str)
 
-    return jsonify({
-        "longest_streak": longest,
-        "start_date": start_str,
-        "end_date": end_str
-    })
+    return jsonify(
+        {"longest_streak": longest, "start_date": start_str, "end_date": end_str}
+    )
+
+
+@app.route("/max_runs_per_day")
+def max_runs_per_day():
+    rows = read_csv()
+    if not rows:
+        return jsonify({"max_runs": 0, "date": None})
+
+    date_counts = {}
+    for row in rows:
+        try:
+            dt = datetime.strptime(row["Date"], "%m/%d/%Y")
+            date_str = dt.strftime("%m/%d/%Y")
+        except ValueError:
+            continue
+        date_counts[date_str] = date_counts.get(date_str, 0) + 1
+
+    if not date_counts:
+        return jsonify({"max_runs": 0, "date": None})
+
+    max_date = max(date_counts, key=lambda d: date_counts[d])
+    max_runs = date_counts[max_date]
+    return jsonify({"max_runs": max_runs, "date": max_date})
 
 
 @app.route("/average_bst")
@@ -595,15 +654,15 @@ def average_bst():
     rows = read_csv()
     if not rows:
         return jsonify({"average_bst": 0})
-    
+
     total_bst = 0
     total_entries = len(rows)
-    
+
     for row in rows:
         pokemon = row["Pokemon"]
         bst = get_pokemon_bst(pokemon)
         total_bst += bst
-    
+
     average = total_bst / total_entries if total_entries > 0 else 0
     return jsonify({"average_bst": int(average)})
 
@@ -621,13 +680,13 @@ def get_pokemon_bst(pokemon_name):
     # First try exact match
     if pokemon_name in pokemon_bst:
         return pokemon_bst[pokemon_name]
-    
+
     # If no exact match, try case-insensitive lookup
     pokemon_lower = pokemon_name.lower()
     for bst_pokemon, bst_value in pokemon_bst.items():
         if bst_pokemon.lower() == pokemon_lower:
             return bst_value
-    
+
     # If still no match, return 0
     return 0
 
@@ -638,81 +697,83 @@ def pokemon_entries(pokemon_name):
     rows = read_csv()
     if not rows:
         return jsonify([])
-    
+
     # Filter entries for the specific Pokemon
     pokemon_entries = []
     location_counts = {}
-    
+
     for idx, row in enumerate(rows):
         if row["Pokemon"].lower() == pokemon_name.lower():
             try:
                 row_date = datetime.strptime(row["Date"], "%m/%d/%Y")
             except ValueError:
                 row_date = datetime.min
-            
-            pokemon_entries.append({
-                "Pokemon": row["Pokemon"],
-                "Location": row["Location"], 
-                "Date": row["Date"],
-                "Notes": row.get("Notes", ""),
-                "_date_dt": row_date,
-                "_csv_idx": idx
-            })
-            
+
+            pokemon_entries.append(
+                {
+                    "Pokemon": row["Pokemon"],
+                    "Location": row["Location"],
+                    "Date": row["Date"],
+                    "Notes": row.get("Notes", ""),
+                    "_date_dt": row_date,
+                    "_csv_idx": idx,
+                }
+            )
+
             # Count locations for this Pokemon
             location = row["Location"]
             location_counts[location] = location_counts.get(location, 0) + 1
-    
+
     # Sort entries by date descending, then by CSV index descending (most recent first)
     pokemon_entries.sort(key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
-    
+
     # Calculate location percentages
     total_entries = len(pokemon_entries)
     location_percentages = []
     if total_entries > 0:
         for location, count in location_counts.items():
             percentage = (count / total_entries) * 100
-            location_percentages.append({
-                "location": location,
-                "count": count,
-                "percentage": percentage
-            })
-        
+            location_percentages.append(
+                {"location": location, "count": count, "percentage": percentage}
+            )
+
         # Sort by count descending
         location_percentages.sort(key=lambda x: x["count"], reverse=True)
-    
+
     # Clean up the response
     for entry in pokemon_entries:
         entry.pop("_date_dt", None)
         entry.pop("_csv_idx", None)
-    
-    return jsonify({
-        "entries": pokemon_entries,
-        "location_percentages": location_percentages,
-        "total_entries": total_entries
-    })
+
+    return jsonify(
+        {
+            "entries": pokemon_entries,
+            "location_percentages": location_percentages,
+            "total_entries": total_entries,
+        }
+    )
 
 
 def ensure_notes_column():
     """Ensure the CSV file has a Notes column, adding it if missing."""
     if not os.path.exists(CSV_FILE):
         return  # File doesn't exist yet, will be created with Notes column
-    
+
     # Read the first line to check headers
     with open(CSV_FILE, mode="r", newline="", encoding="utf-8") as f:
         first_line = f.readline().strip()
         if not first_line:
             return  # Empty file
-        
-        headers = first_line.split(',')
-        
+
+        headers = first_line.split(",")
+
         # If Notes column already exists, we're good
         if "Notes" in headers:
             return
-    
+
     # Notes column is missing, we need to add it
     print("Notes column not found in CSV. Adding Notes column...")
-    
+
     # Read all existing data
     rows = []
     with open(CSV_FILE, mode="r", newline="", encoding="utf-8") as f:
@@ -721,13 +782,13 @@ def ensure_notes_column():
             # Add empty Notes field to existing rows
             row["Notes"] = ""
             rows.append(row)
-    
+
     # Write back with Notes column
     with open(CSV_FILE, mode="w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["Pokemon", "Location", "Date", "Notes"])
         writer.writeheader()
         writer.writerows(rows)
-    
+
     print(f"Successfully added Notes column to {CSV_FILE}")
 
 
@@ -751,8 +812,14 @@ if __name__ == "__main__":
     s.close()
     print("MainsLeaderboard is running at:")
     print()
-    print(f"http://{ip}:{config['port']}" + " | This link is accessible anywhere on your network")
-    print(f"http://127.0.0.1:{config['port']}" + " | This link is only accessible from your local machine")
+    print(
+        f"http://{ip}:{config['port']}"
+        + " | This link is accessible anywhere on your network"
+    )
+    print(
+        f"http://127.0.0.1:{config['port']}"
+        + " | This link is only accessible from your local machine"
+    )
     print()
 
     # Deploy web server
