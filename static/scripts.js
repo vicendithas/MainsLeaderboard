@@ -582,8 +582,8 @@ function fetchMaxRunsPerDay() {
         .then(response => response.json())
         .then(data => {
             const maxRunsDiv = document.getElementById('maxRunsPerDay');
-            if (data.max_runs && data.date) {
-                maxRunsDiv.textContent = `Most Runs in a Day: ${data.max_runs} (${data.date})`;
+            if (data.max_runs && data.dates && data.dates.length > 0) {
+                maxRunsDiv.textContent = `Most Runs in a Day: ${data.max_runs} (${data.dates.join(', ')})`;
             } else {
                 maxRunsDiv.textContent = 'Most Runs in a Day: N/A';
             }

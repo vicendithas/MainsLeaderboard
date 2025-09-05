@@ -630,7 +630,7 @@ def longest_streak():
 def max_runs_per_day():
     rows = read_csv()
     if not rows:
-        return jsonify({"max_runs": 0, "date": None})
+        return jsonify({"max_runs": 0, "dates": []})
 
     date_counts = {}
     for row in rows:
@@ -642,11 +642,11 @@ def max_runs_per_day():
         date_counts[date_str] = date_counts.get(date_str, 0) + 1
 
     if not date_counts:
-        return jsonify({"max_runs": 0, "date": None})
+        return jsonify({"max_runs": 0, "dates": []})
 
-    max_date = max(date_counts, key=lambda d: date_counts[d])
-    max_runs = date_counts[max_date]
-    return jsonify({"max_runs": max_runs, "date": max_date})
+    max_runs = max(date_counts.values())
+    max_dates = [date for date, count in date_counts.items() if count == max_runs]
+    return jsonify({"max_runs": max_runs, "dates": max_dates})
 
 
 @app.route("/average_bst")
