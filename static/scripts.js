@@ -606,6 +606,13 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/csv_data')
             .then(response => response.json())
             .then(data => {
+                // Sort by date descending (most recent first)
+                data.sort((a, b) => {
+                    // Parse as MM/DD/YYYY or fallback to empty string
+                    const aDate = new Date(a.Date || '');
+                    const bDate = new Date(b.Date || '');
+                    return bDate - aDate;
+                });
                 csvTableBody.innerHTML = '';
                 data.forEach((row, idx) => {
                     const tr = document.createElement('tr');
@@ -725,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => {
                 if (res.success) {
                     alert('Row added!');
-                    openCsvModal(); // Refresh table
+                    openCsvModal(); // Refresh table (will re-sort)
                     fetchLeaderboardData();
                     fetchLast10Pokemon();
                     fetchLocationPercentages();
@@ -743,7 +750,12 @@ document.addEventListener('DOMContentLoaded', function() {
         tr.querySelector('.deleteRowBtn').onclick = function() {
             tr.remove();
         };
-        csvTableBody.appendChild(tr);
+        // Insert at the top of the table body
+        if (csvTableBody.firstChild) {
+            csvTableBody.insertBefore(tr, csvTableBody.firstChild);
+        } else {
+            csvTableBody.appendChild(tr);
+        }
     };
 });
 
