@@ -637,6 +637,8 @@ def max_runs_per_day():
         try:
             dt = datetime.strptime(row["Date"], "%m/%d/%Y")
             date_str = dt.strftime("%m/%d/%Y")
+            # Remove leading zeros from month and day
+            date_str = re.sub(r"\b0(\d)", r"\1", date_str)
         except ValueError:
             continue
         date_counts[date_str] = date_counts.get(date_str, 0) + 1
