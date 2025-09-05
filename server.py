@@ -802,6 +802,54 @@ else:
     ensure_notes_column()
 
 
+@app.route("/csv_data", methods=["GET"])
+def get_csv_data():
+    rows = read_csv()
+    return jsonify(rows)
+
+
+@app.route("/csv_update_row", methods=["POST"])
+def csv_update_row():
+    data = request.json
+    row_idx = data.get("row_idx")
+    new_row = data.get("row")
+    rows = read_csv()
+    if 0 <= row_idx < len(rows):
+        # Only update allowed fields
+        for field in ["Pokemon", "Location", "Date", "Notes"]:
+            rows[row_idx][field] = new_row.get(field, rows[row_idx][field])
+        write_csv(rows)
+        return jsonify({"success": True})
+    return jsonify({"success": False, "error": "Invalid row index"})
+
+
+@app.route("/csv_add_row", methods=["POST"])
+def csv_add_row():
+    data = request.json
+    new_row = {
+        "Pokemon": data.get("Pokemon", ""),
+        "Location": data.get("Location", ""),
+        "Date": data.get("Date", ""),
+        "Notes": data.get("Notes", ""),
+    }
+    rows = read_csv()
+    rows.append(new_row)
+    write_csv(rows)
+    return jsonify({"success": True})
+
+
+@app.route("/csv_delete_row", methods=["POST"])
+def csv_delete_row():
+    data = request.json
+    row_idx = data.get("row_idx")
+    rows = read_csv()
+    if 0 <= row_idx < len(rows):
+        rows.pop(row_idx)
+        write_csv(rows)
+        return jsonify({"success": True})
+    return jsonify({"success": False, "error": "Invalid row index"})
+
+
 if __name__ == "__main__":
     # Retrieve primary IP address
     import socket

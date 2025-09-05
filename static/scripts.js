@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchLocationPercentages();
             fetchCurrentStreak(); // <-- Updated line
             fetchLongestStreak(); // <-- Added line
+            fetchMaxRunsPerDay(); // <-- Add this line
 			fetchPokemonOptions();
 			setDefaultDate();
 
@@ -500,7 +501,6 @@ async function addEntry() {
 		console.error('Invalid Pokemon Entered');
 		document.getElementById('message').textContent = 'Invalid Pokemon Entered';
 	}
-	
 }
 
 let sortOrder = [true, false, false, false, false]; // Track sort order for each column (added one more for new column)
@@ -594,6 +594,156 @@ function fetchMaxRunsPerDay() {
         });
 }
 
-// In DOMContentLoaded, add:
-fetchMaxRunsPerDay();
+// CSV Editor Modal Logic
+document.addEventListener('DOMContentLoaded', function() {
+    const editCsvBtn = document.getElementById('editCsvBtn');
+    const csvModal = document.getElementById('csvModal');
+    const closeCsvModal = document.getElementById('closeCsvModal');
+    const csvTableBody = document.getElementById('csvTable').getElementsByTagName('tbody')[0];
+    const addCsvRowBtn = document.getElementById('addCsvRowBtn');
+
+    function openCsvModal() {
+        fetch('/csv_data')
+            .then(response => response.json())
+            .then(data => {
+                csvTableBody.innerHTML = '';
+                data.forEach((row, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td contenteditable="true">${escapeHtml(row.Pokemon)}</td>
+                        <td contenteditable="true">${escapeHtml(row.Location)}</td>
+                        <td contenteditable="true">${escapeHtml(row.Date)}</td>
+                        <td contenteditable="true">${escapeHtml(row.Notes || '')}</td>
+                        <td>
+                            <button class="saveRowBtn">Save</button>
+                            <button class="deleteRowBtn">Delete</button>
+                        </td>
+                    `;
+                    // Save handler
+                    tr.querySelector('.saveRowBtn').onclick = function() {
+                        const cells = tr.querySelectorAll('td');
+                        const updatedRow = {
+                            Pokemon: cells[0].textContent.trim(),
+                            Location: cells[1].textContent.trim(),
+                            Date: cells[2].textContent.trim(),
+                            Notes: cells[3].textContent.trim()
+                        };
+                        fetch('/csv_update_row', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({row_idx: idx, row: updatedRow})
+                        })
+                        .then(response => response.json())
+                        .then(res => {
+                            if (res.success) {
+                                alert('Row saved!');
+                                fetchLeaderboardData();
+                                fetchLast10Pokemon();
+                                fetchLocationPercentages();
+                                fetchTotalPokemon();
+                                fetchAverageBst();
+                                fetchCurrentStreak();
+                                fetchLongestStreak();
+                                fetchMaxRunsPerDay();
+                            } else {
+                                alert('Failed to save row.');
+                            }
+                        });
+                    };
+                    // Delete handler
+                    tr.querySelector('.deleteRowBtn').onclick = function() {
+                        if (confirm('Delete this row?')) {
+                            fetch('/csv_delete_row', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({row_idx: idx})
+                            })
+                            .then(response => response.json())
+                            .then(res => {
+                                if (res.success) {
+                                    tr.remove();
+                                    fetchLeaderboardData();
+                                    fetchLast10Pokemon();
+                                    fetchLocationPercentages();
+                                    fetchTotalPokemon();
+                                    fetchAverageBst();
+                                    fetchCurrentStreak();
+                                    fetchLongestStreak();
+                                    fetchMaxRunsPerDay();
+                                } else {
+                                    alert('Failed to delete row.');
+                                }
+                            });
+                        }
+                    };
+                    csvTableBody.appendChild(tr);
+                });
+            });
+        csvModal.style.display = 'block';
+        document.body.classList.add('modal-open');
+    }
+
+    editCsvBtn.onclick = openCsvModal;
+    closeCsvModal.onclick = function() {
+        csvModal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+    };
+    window.onclick = function(event) {
+        if (event.target === csvModal) {
+            csvModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+    };
+
+    addCsvRowBtn.onclick = function() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td>
+                <button class="saveRowBtn">Save</button>
+                <button class="deleteRowBtn">Delete</button>
+            </td>
+        `;
+        // Save handler for new row
+        tr.querySelector('.saveRowBtn').onclick = function() {
+            const cells = tr.querySelectorAll('td');
+            const newRow = {
+                Pokemon: cells[0].textContent.trim(),
+                Location: cells[1].textContent.trim(),
+                Date: cells[2].textContent.trim(),
+                Notes: cells[3].textContent.trim()
+            };
+            fetch('/csv_add_row', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newRow)
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.success) {
+                    alert('Row added!');
+                    openCsvModal(); // Refresh table
+                    fetchLeaderboardData();
+                    fetchLast10Pokemon();
+                    fetchLocationPercentages();
+                    fetchTotalPokemon();
+                    fetchAverageBst();
+                    fetchCurrentStreak();
+                    fetchLongestStreak();
+                    fetchMaxRunsPerDay();
+                } else {
+                    alert('Failed to add row.');
+                }
+            });
+        };
+        // Delete handler for new row (just remove from DOM)
+        tr.querySelector('.deleteRowBtn').onclick = function() {
+            tr.remove();
+        };
+        csvTableBody.appendChild(tr);
+    };
+});
 

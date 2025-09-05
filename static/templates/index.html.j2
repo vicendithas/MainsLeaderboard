@@ -50,6 +50,8 @@
         </form>
     </div>
 
+    <button id="editCsvBtn" style="margin: 20px;">Edit CSV</button>
+
     <div id="message"></div>
 
     <div class="content-container">
@@ -149,6 +151,29 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- CSV Edit Modal -->
+    <div id="csvModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeCsvModal">&times;</span>
+            <h2>Edit pokemon_usage.csv</h2>
+            <button id="addCsvRowBtn">Add Row</button>
+            <table id="csvTable" style="width:100%; margin-top:10px;">
+                <thead>
+                    <tr>
+                        <th>Pokemon</th>
+                        <th>Location</th>
+                        <th>Date</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be dynamically added here -->
+                </tbody>
+            </table>
         </div>
     </div>
 </body>
