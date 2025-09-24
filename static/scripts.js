@@ -508,7 +508,9 @@ async function addEntry() {
 		.then(data => {
 			if (data.success) {
 				fetchTotalPokemon(); // Update the total Pokemon count
+				fetchUniquePokemon();
 				fetchAverageBst(); // Update the average BST
+				fetchLowestBst();
 				fetchLeaderboardData();
 				fetchLast10Pokemon();
 				fetchLocationPercentages();
