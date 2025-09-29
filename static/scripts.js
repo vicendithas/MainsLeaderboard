@@ -1,33 +1,36 @@
 let shinyOdds = 8192; // Default value
+let game = 'crystal'; // Default game
+let shinyGifsExists = true; // Assume true by default
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Fetch shiny odds from config
+    // Fetch config on load
     fetch('/config')
         .then(response => response.json())
         .then(cfg => {
             shinyOdds = cfg.shiny_odds || 8192;
+            volume = cfg.volume || 0.5;
+            game = cfg.game || 'crystal';
+            shinyGifsExists = !!cfg.shiny_gifs_exists;
         })
         .catch(() => {
-            // If config fetch fails, use default odds
+            // If config fetch fails, use defaults
         })
-		.finally(() => {
-			fetchTotalPokemon();
-			fetchUniquePokemon();
+        .finally(() => {
+            fetchTotalPokemon();
             fetchAverageBst();
-			fetchLowestBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
-            fetchCurrentStreak(); // <-- Updated line
-            fetchLongestStreak(); // <-- Added line
-			fetchPokemonOptions();
-			setDefaultDate();
+            fetchCurrentStreak();
+            fetchLongestStreak();
+            fetchPokemonOptions();
+            setDefaultDate();
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
                 addEntry();
             });
-		});
+        });
 });
 
 function escapeHtml(str) {
@@ -48,13 +51,20 @@ function sanitizeFilename(name) {
 
 function getGifPath(pokemonName, shinyCheckCallback) {
     // Use shinyOdds from config
-    const isShiny = Math.floor(Math.random() * shinyOdds) === 0;
+    const isShiny = shinyGifsExists && Math.floor(Math.random() * shinyOdds) === 0;
     if (isShiny && typeof shinyCheckCallback === 'function') {
         shinyCheckCallback();
     }
-    const folder = isShiny ? 'shiny_gifs' : 'gifs';
+    let folder, subfolder;
+    if (isShiny && shinyGifsExists) {
+        folder = 'shiny_gifs';
+        subfolder = game;
+    } else {
+        folder = 'gifs';
+        subfolder = game;
+    }
     const filename = sanitizeFilename(pokemonName);
-    return `/static/${folder}/${filename}.gif`;
+    return `/static/${folder}/${subfolder}/${filename}.gif`;
 }
 
 let shinyMessageShown = false;
