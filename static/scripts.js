@@ -16,8 +16,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // If config fetch fails, use defaults
         })
         .finally(() => {
+            // Only call stat fetchers after config is loaded
             fetchTotalPokemon();
+            fetchUniquePokemon();
             fetchAverageBst();
+            fetchLowestBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
