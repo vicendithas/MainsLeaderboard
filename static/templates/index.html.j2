@@ -24,11 +24,6 @@
                 </a>
                 <h1>{{ title }}</h1>
             </div>
-            <div id="totalEntries">Total Pokemon: Loading...</div> <!-- Updated section for total Pokémon -->
-            <div id="averageBst">Average BST: Loading...</div>
-            <div id="currentStreak">Current Streak: Loading...</div>
-            <div id="longestStreak">Longest Streak: Loading...</div>
-            <div id="maxRunsPerDay">Most Runs in a Day: Loading...</div> <!-- Added section for most runs in a day -->
         </div>
         <form id="entryForm">
             <label for="pokemon">Pokemon:</label>
@@ -50,6 +45,25 @@
             <button id="editCsvBtn" type="button" style="margin-left: 10px;">Edit CSV</button>
         </form>
     </div>
+	<div class="stats-container">
+		<table class="stats-table">
+			<tr>
+				<td id="totalEntries" class="stats">Total Pokemon: Loading...</td> <!-- Updated section for total Pokémon -->
+				<td id="currentStreak" class="stats">Current Streak: Loading...</td>
+			</tr>
+			<tr>
+				<td id="uniqueEntries" class="stats">Unique Pokemon: Loading...</td>
+				<td id="longestStreak" class="stats">Longest Streak: Loading...</td>
+			</tr>
+			<tr>
+				<td id="averageBst" class="stats">Average BST: Loading...</td>
+				<td id="maxRunsPerDay" class="stats">Most Runs in a Day: Loading...</td> <!-- Added section for most runs in a day -->
+			</tr>
+			<tr>
+				<td id="lowestBst" class="stats">Lowest BST: Loading...</td>
+			</tr>
+		</table>
+	</div>
 
     <div id="message"></div>
 

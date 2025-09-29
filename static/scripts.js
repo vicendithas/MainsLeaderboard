@@ -12,7 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
         })
 		.finally(() => {
 			fetchTotalPokemon();
+			fetchUniquePokemon();
             fetchAverageBst();
+			fetchLowestBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
@@ -113,6 +115,19 @@ function fetchTotalPokemon() {
         });
 }
 
+function fetchUniquePokemon() {
+    fetch('/unique_pokemon')
+        .then(response => response.json())
+        .then(data => {
+            const uniqueEntriesDiv = document.getElementById('uniqueEntries');
+            uniqueEntriesDiv.textContent = `Unique Pokemon: ${data.unique_pokemon}`;
+        })
+        .catch(error => {
+            console.error('Error fetching unique Pokemon data:', error);
+            document.getElementById('uniqueEntries').textContent = 'Unique Pokemon: Error loading data.';
+        });
+}
+
 function fetchAverageBst() {
     fetch('/average_bst')
         .then(response => response.json())
@@ -123,6 +138,19 @@ function fetchAverageBst() {
         .catch(error => {
             console.error('Error fetching average BST data:', error);
             document.getElementById('averageBst').textContent = 'Average BST: Error loading data.';
+        });
+}
+
+function fetchLowestBst() {
+    fetch('/lowest_bst')
+        .then(response => response.json())
+        .then(data => {
+            const lowestBstDiv = document.getElementById('lowestBst');
+            lowestBstDiv.textContent = `Lowest BST: ${data.lowest_bst}`;
+        })
+        .catch(error => {
+            console.error('Error fetching lowest BST data:', error);
+            document.getElementById('lowestBst').textContent = 'Lowest BST: Error loading data.';
         });
 }
 
@@ -481,7 +509,9 @@ async function addEntry() {
 		.then(data => {
 			if (data.success) {
 				fetchTotalPokemon(); // Update the total Pokemon count
+				fetchUniquePokemon();
 				fetchAverageBst(); // Update the average BST
+				fetchLowestBst();
 				fetchLeaderboardData();
 				fetchLast10Pokemon();
 				fetchLocationPercentages();

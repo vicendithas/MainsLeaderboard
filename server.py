@@ -291,7 +291,6 @@ def leaderboard():
                             and row["_csv_idx"] > last_idx
                         ):
                             runs_count += 1
-
                     runs_since_last = runs_count
 
             leaderboard_list.append(
@@ -384,6 +383,9 @@ def last10():
                     ):
                         runs_count += 1
 
+                # Add this line to include the current run
+                runs_count += 1
+
                 prev_runs = runs_count
                 break
 
@@ -456,6 +458,18 @@ def location_percentages():
 def total_pokemon():
     rows = read_csv()
     return jsonify({"total_pokemon": len(rows)})
+
+
+# Endpoint to fetch the number of unique Pokémon entries
+@app.route("/unique_pokemon")
+def unique_pokemon():
+    rows = read_csv()
+    unique_list = []
+    for row in rows:
+        curr_pokemon = row["Pokemon"]
+        if curr_pokemon not in unique_list:
+            unique_list.append(curr_pokemon)
+    return jsonify({"unique_pokemon": len(unique_list)})
 
 
 @app.route("/config")
@@ -667,6 +681,23 @@ def average_bst():
 
     average = total_bst / total_entries if total_entries > 0 else 0
     return jsonify({"average_bst": int(average)})
+
+
+@app.route("/lowest_bst")
+def lowest_bst():
+    rows = read_csv()
+    if not rows:
+        return jsonify({"lowest_bst": 0})
+
+    lowest_bst = 999
+
+    for row in rows:
+        pokemon = row["Pokemon"]
+        bst = get_pokemon_bst(pokemon)
+        if bst < lowest_bst:
+            lowest_bst = bst
+
+    return jsonify({"lowest_bst": lowest_bst})
 
 
 def sanitize_filename(name):
