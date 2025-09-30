@@ -42,6 +42,7 @@ Each time a GIF is loaded onto the page, it has a (by default) 1/8192 chance of 
 To choose the game's sprites/gifs that are used on the page, edit the "game" parameter in config.json. Valid options are:
 - crystal
 - emerald
+- stadium2
 
 
 # Update
