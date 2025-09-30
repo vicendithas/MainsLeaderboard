@@ -14,7 +14,22 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+	padding-top: 20px;
+	padding-bottom: 0px;
+	padding-left: 20px;
+	padding-right: 20px;
+    background-color: #1e1e1e; /* Darker background for header */
+}
+
+/* Stats container */
+.stats-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+	padding-top: 10px;
+	padding-bottom: 20px;
+	padding-left: 20px;
+	padding-right: 20px;
     background-color: #1e1e1e; /* Darker background for header */
 }
 
@@ -51,11 +66,13 @@ form {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end; /* Align form items to the right */
+	align-items: center;
 }
 
 form label, form input, form button {
     margin-right: 10px;
     margin-bottom: 10px;
+	line-height: 20px;
 }
 
 /* Notes input field styling */
@@ -76,6 +93,26 @@ table, th, td {
 
 th, td {
     padding: 10px;
+    text-align: left;
+}
+
+table.stats-table {
+    width: fit-content;
+    border-collapse: collapse;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 10px;
+}
+
+table.stats-table, td.stats {
+    border: 0px solid #333333; /* no border */
+}
+
+td.stats {
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 0px;
+	padding-right: 20px;
     text-align: left;
 }
 
@@ -116,6 +153,7 @@ button:hover {
 .pokemon-gif {
     width: 50px;  /* Adjust as needed */
     height: 50px; /* Adjust as needed */
+    object-fit: contain; /* Preserves aspect ratio */
     vertical-align: middle;
     margin-right: 10px; /* Space between image and text */
 }

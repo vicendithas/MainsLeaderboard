@@ -1,31 +1,39 @@
 let shinyOdds = 8192; // Default value
+let game = 'crystal'; // Default game
+let shinyGifsExists = true; // Assume true by default
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Fetch shiny odds from config
+    // Fetch config on load
     fetch('/config')
         .then(response => response.json())
         .then(cfg => {
             shinyOdds = cfg.shiny_odds || 8192;
+            volume = cfg.volume || 0.5;
+            game = cfg.game || 'crystal';
+            shinyGifsExists = !!cfg.shiny_gifs_exists;
         })
         .catch(() => {
-            // If config fetch fails, use default odds
+            // If config fetch fails, use defaults
         })
-		.finally(() => {
-			fetchTotalPokemon();
+        .finally(() => {
+            // Only call stat fetchers after config is loaded
+            fetchTotalPokemon();
+            fetchUniquePokemon();
             fetchAverageBst();
+            fetchLowestBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
-            fetchCurrentStreak(); // <-- Updated line
-            fetchLongestStreak(); // <-- Added line
-			fetchPokemonOptions();
-			setDefaultDate();
+            fetchCurrentStreak();
+            fetchLongestStreak();
+            fetchPokemonOptions();
+            setDefaultDate();
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
                 addEntry();
             });
-		});
+        });
 });
 
 function escapeHtml(str) {
@@ -44,15 +52,14 @@ function sanitizeFilename(name) {
     return name.toLowerCase().replace(/ /g, '_').replace(/'/g, '');
 }
 
-function getGifPath(pokemonName, shinyCheckCallback) {
-    // Use shinyOdds from config
-    const isShiny = Math.floor(Math.random() * shinyOdds) === 0;
-    if (isShiny && typeof shinyCheckCallback === 'function') {
-        shinyCheckCallback();
+function getMediaPath(pokemonName, shinyCheckCallback) {
+    let shiny = 0;
+    if (shinyGifsExists && Math.floor(Math.random() * shinyOdds) === 0) {
+        if (typeof shinyCheckCallback === 'function') shinyCheckCallback();
+        shiny = 1;
     }
-    const folder = isShiny ? 'shiny_gifs' : 'gifs';
-    const filename = sanitizeFilename(pokemonName);
-    return `/static/${folder}/${filename}.gif`;
+    // Use the dynamic endpoint instead of static path
+    return `/pokemon_media/${encodeURIComponent(pokemonName)}?shiny=${shiny}`;
 }
 
 let shinyMessageShown = false;
@@ -112,6 +119,19 @@ function fetchTotalPokemon() {
         });
 }
 
+function fetchUniquePokemon() {
+    fetch('/unique_pokemon')
+        .then(response => response.json())
+        .then(data => {
+            const uniqueEntriesDiv = document.getElementById('uniqueEntries');
+            uniqueEntriesDiv.textContent = `Unique Pokemon: ${data.unique_pokemon}`;
+        })
+        .catch(error => {
+            console.error('Error fetching unique Pokemon data:', error);
+            document.getElementById('uniqueEntries').textContent = 'Unique Pokemon: Error loading data.';
+        });
+}
+
 function fetchAverageBst() {
     fetch('/average_bst')
         .then(response => response.json())
@@ -122,6 +142,19 @@ function fetchAverageBst() {
         .catch(error => {
             console.error('Error fetching average BST data:', error);
             document.getElementById('averageBst').textContent = 'Average BST: Error loading data.';
+        });
+}
+
+function fetchLowestBst() {
+    fetch('/lowest_bst')
+        .then(response => response.json())
+        .then(data => {
+            const lowestBstDiv = document.getElementById('lowestBst');
+            lowestBstDiv.textContent = `Lowest BST: ${data.lowest_bst}`;
+        })
+        .catch(error => {
+            console.error('Error fetching lowest BST data:', error);
+            document.getElementById('lowestBst').textContent = 'Lowest BST: Error loading data.';
         });
 }
 
@@ -214,7 +247,7 @@ function fetchLeaderboardData() {
             leaderboardTable.innerHTML = '';
 
             data.forEach((row, index) => {
-                const gifPath = getGifPath(row.Pokemon, showShinyMessageAndAudio);
+                const gifPath = getMediaPath(row.Pokemon, showShinyMessageAndAudio);
 
                 // Choose which value to display based on current toggle state
                 const sinceLastValue = showTimeSinceLastLeaderboard ? 
@@ -253,7 +286,7 @@ function showPokemonEntries(pokemonName) {
             modalPokemonName.textContent = `${pokemonName} - All Entries (${data.total_entries} total)`;
             
             // Set the Pokemon GIF
-            const gifPath = getGifPath(pokemonName, showShinyMessageAndAudio);
+            const gifPath = getMediaPath(pokemonName, showShinyMessageAndAudio);
             modalPokemonGif.src = gifPath;
             modalPokemonGif.alt = pokemonName;
             
@@ -345,7 +378,7 @@ function fetchLast10Pokemon() {
             last10Table.innerHTML = '';
 
             data.forEach(entry => {
-                const gifPath = getGifPath(entry.Pokemon, showShinyMessageAndAudio);
+                const gifPath = getMediaPath(entry.Pokemon, showShinyMessageAndAudio);
                 
                 // Choose which value to display based on current toggle state
                 const sinceLastValue = showTimeSinceLast ? 
@@ -480,7 +513,9 @@ async function addEntry() {
 		.then(data => {
 			if (data.success) {
 				fetchTotalPokemon(); // Update the total Pokemon count
+				fetchUniquePokemon();
 				fetchAverageBst(); // Update the average BST
+				fetchLowestBst();
 				fetchLeaderboardData();
 				fetchLast10Pokemon();
 				fetchLocationPercentages();
