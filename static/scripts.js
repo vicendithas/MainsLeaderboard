@@ -52,22 +52,14 @@ function sanitizeFilename(name) {
     return name.toLowerCase().replace(/ /g, '_').replace(/'/g, '');
 }
 
-function getGifPath(pokemonName, shinyCheckCallback) {
-    // Use shinyOdds from config
-    const isShiny = shinyGifsExists && Math.floor(Math.random() * shinyOdds) === 0;
-    if (isShiny && typeof shinyCheckCallback === 'function') {
-        shinyCheckCallback();
+function getMediaPath(pokemonName, shinyCheckCallback) {
+    let shiny = 0;
+    if (shinyGifsExists && Math.floor(Math.random() * shinyOdds) === 0) {
+        if (typeof shinyCheckCallback === 'function') shinyCheckCallback();
+        shiny = 1;
     }
-    let folder, subfolder;
-    if (isShiny && shinyGifsExists) {
-        folder = 'shiny_gifs';
-        subfolder = game;
-    } else {
-        folder = 'gifs';
-        subfolder = game;
-    }
-    const filename = sanitizeFilename(pokemonName);
-    return `/static/${folder}/${subfolder}/${filename}.gif`;
+    // Use the dynamic endpoint instead of static path
+    return `/pokemon_media/${encodeURIComponent(pokemonName)}?shiny=${shiny}`;
 }
 
 let shinyMessageShown = false;
@@ -255,7 +247,7 @@ function fetchLeaderboardData() {
             leaderboardTable.innerHTML = '';
 
             data.forEach((row, index) => {
-                const gifPath = getGifPath(row.Pokemon, showShinyMessageAndAudio);
+                const gifPath = getMediaPath(row.Pokemon, showShinyMessageAndAudio);
 
                 // Choose which value to display based on current toggle state
                 const sinceLastValue = showTimeSinceLastLeaderboard ? 
@@ -294,7 +286,7 @@ function showPokemonEntries(pokemonName) {
             modalPokemonName.textContent = `${pokemonName} - All Entries (${data.total_entries} total)`;
             
             // Set the Pokemon GIF
-            const gifPath = getGifPath(pokemonName, showShinyMessageAndAudio);
+            const gifPath = getMediaPath(pokemonName, showShinyMessageAndAudio);
             modalPokemonGif.src = gifPath;
             modalPokemonGif.alt = pokemonName;
             
@@ -386,7 +378,7 @@ function fetchLast10Pokemon() {
             last10Table.innerHTML = '';
 
             data.forEach(entry => {
-                const gifPath = getGifPath(entry.Pokemon, showShinyMessageAndAudio);
+                const gifPath = getMediaPath(entry.Pokemon, showShinyMessageAndAudio);
                 
                 // Choose which value to display based on current toggle state
                 const sinceLastValue = showTimeSinceLast ? 
