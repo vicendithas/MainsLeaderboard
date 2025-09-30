@@ -1,34 +1,39 @@
 let shinyOdds = 8192; // Default value
+let game = 'crystal'; // Default game
+let shinyGifsExists = true; // Assume true by default
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Fetch shiny odds from config
+    // Fetch config on load
     fetch('/config')
         .then(response => response.json())
         .then(cfg => {
             shinyOdds = cfg.shiny_odds || 8192;
+            volume = cfg.volume || 0.5;
+            game = cfg.game || 'crystal';
+            shinyGifsExists = !!cfg.shiny_gifs_exists;
         })
         .catch(() => {
-            // If config fetch fails, use default odds
+            // If config fetch fails, use defaults
         })
-		.finally(() => {
-			fetchTotalPokemon();
-			fetchUniquePokemon();
+        .finally(() => {
+            // Only call stat fetchers after config is loaded
+            fetchTotalPokemon();
+            fetchUniquePokemon();
             fetchAverageBst();
-			fetchLowestBst();
+            fetchLowestBst();
             fetchLeaderboardData();
             fetchLast10Pokemon();
             fetchLocationPercentages();
-            fetchCurrentStreak(); // <-- Updated line
-            fetchLongestStreak(); // <-- Added line
-            fetchMaxRunsPerDay(); // <-- Add this line
-			fetchPokemonOptions();
-			setDefaultDate();
+            fetchCurrentStreak();
+            fetchLongestStreak();
+            fetchPokemonOptions();
+            setDefaultDate();
 
             document.getElementById('entryForm').addEventListener('submit', function(event) {
                 event.preventDefault();
                 addEntry();
             });
-		});
+        });
 });
 
 function escapeHtml(str) {
@@ -47,15 +52,14 @@ function sanitizeFilename(name) {
     return name.toLowerCase().replace(/ /g, '_').replace(/'/g, '');
 }
 
-function getGifPath(pokemonName, shinyCheckCallback) {
-    // Use shinyOdds from config
-    const isShiny = Math.floor(Math.random() * shinyOdds) === 0;
-    if (isShiny && typeof shinyCheckCallback === 'function') {
-        shinyCheckCallback();
+function getMediaPath(pokemonName, shinyCheckCallback) {
+    let shiny = 0;
+    if (shinyGifsExists && Math.floor(Math.random() * shinyOdds) === 0) {
+        if (typeof shinyCheckCallback === 'function') shinyCheckCallback();
+        shiny = 1;
     }
-    const folder = isShiny ? 'shiny_gifs' : 'gifs';
-    const filename = sanitizeFilename(pokemonName);
-    return `/static/${folder}/${filename}.gif`;
+    // Use the dynamic endpoint instead of static path
+    return `/pokemon_media/${encodeURIComponent(pokemonName)}?shiny=${shiny}`;
 }
 
 let shinyMessageShown = false;
@@ -243,7 +247,7 @@ function fetchLeaderboardData() {
             leaderboardTable.innerHTML = '';
 
             data.forEach((row, index) => {
-                const gifPath = getGifPath(row.Pokemon, showShinyMessageAndAudio);
+                const gifPath = getMediaPath(row.Pokemon, showShinyMessageAndAudio);
 
                 // Choose which value to display based on current toggle state
                 const sinceLastValue = showTimeSinceLastLeaderboard ? 
@@ -282,7 +286,7 @@ function showPokemonEntries(pokemonName) {
             modalPokemonName.textContent = `${pokemonName} - All Entries (${data.total_entries} total)`;
             
             // Set the Pokemon GIF
-            const gifPath = getGifPath(pokemonName, showShinyMessageAndAudio);
+            const gifPath = getMediaPath(pokemonName, showShinyMessageAndAudio);
             modalPokemonGif.src = gifPath;
             modalPokemonGif.alt = pokemonName;
             
@@ -374,7 +378,7 @@ function fetchLast10Pokemon() {
             last10Table.innerHTML = '';
 
             data.forEach(entry => {
-                const gifPath = getGifPath(entry.Pokemon, showShinyMessageAndAudio);
+                const gifPath = getMediaPath(entry.Pokemon, showShinyMessageAndAudio);
                 
                 // Choose which value to display based on current toggle state
                 const sinceLastValue = showTimeSinceLast ? 
@@ -531,6 +535,7 @@ async function addEntry() {
 		console.error('Invalid Pokemon Entered');
 		document.getElementById('message').textContent = 'Invalid Pokemon Entered';
 	}
+	
 }
 
 let sortOrder = [true, false, false, false, false]; // Track sort order for each column (added one more for new column)
@@ -624,168 +629,6 @@ function fetchMaxRunsPerDay() {
         });
 }
 
-// CSV Editor Modal Logic
-document.addEventListener('DOMContentLoaded', function() {
-    const editCsvBtn = document.getElementById('editCsvBtn');
-    const csvModal = document.getElementById('csvModal');
-    const closeCsvModal = document.getElementById('closeCsvModal');
-    const csvTableBody = document.getElementById('csvTable').getElementsByTagName('tbody')[0];
-    const addCsvRowBtn = document.getElementById('addCsvRowBtn');
-
-    function openCsvModal() {
-        fetch('/csv_data')
-            .then(response => response.json())
-            .then(data => {
-                // Sort by date descending (most recent first)
-                data.sort((a, b) => {
-                    // Parse as MM/DD/YYYY or fallback to empty string
-                    const aDate = new Date(a.Date || '');
-                    const bDate = new Date(b.Date || '');
-                    return bDate - aDate;
-                });
-                csvTableBody.innerHTML = '';
-                data.forEach((row, idx) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td contenteditable="true">${escapeHtml(row.Pokemon)}</td>
-                        <td contenteditable="true">${escapeHtml(row.Location)}</td>
-                        <td contenteditable="true">${escapeHtml(row.Date)}</td>
-                        <td contenteditable="true">${escapeHtml(row.Notes || '')}</td>
-                        <td>
-                            <button class="saveRowBtn">Save</button>
-                            <button class="deleteRowBtn">Delete</button>
-                        </td>
-                    `;
-                    // Save handler
-                    tr.querySelector('.saveRowBtn').onclick = function() {
-                        const cells = tr.querySelectorAll('td');
-                        const updatedRow = {
-                            Pokemon: cells[0].textContent.trim(),
-                            Location: cells[1].textContent.trim(),
-                            Date: cells[2].textContent.trim(),
-                            Notes: cells[3].textContent.trim()
-                        };
-                        fetch('/csv_update_row', {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({row_idx: idx, row: updatedRow})
-                        })
-                        .then(response => response.json())
-                        .then(res => {
-                            if (res.success) {
-                                alert('Row saved!');
-                                fetchLeaderboardData();
-                                fetchLast10Pokemon();
-                                fetchLocationPercentages();
-                                fetchTotalPokemon();
-                                fetchAverageBst();
-                                fetchCurrentStreak();
-                                fetchLongestStreak();
-                                fetchMaxRunsPerDay();
-                            } else {
-                                alert('Failed to save row.');
-                            }
-                        });
-                    };
-                    // Delete handler
-                    tr.querySelector('.deleteRowBtn').onclick = function() {
-                        if (confirm('Delete this row?')) {
-                            fetch('/csv_delete_row', {
-                                method: 'POST',
-                                headers: {'Content-Type': 'application/json'},
-                                body: JSON.stringify({row_idx: idx})
-                            })
-                            .then(response => response.json())
-                            .then(res => {
-                                if (res.success) {
-                                    tr.remove();
-                                    fetchLeaderboardData();
-                                    fetchLast10Pokemon();
-                                    fetchLocationPercentages();
-                                    fetchTotalPokemon();
-                                    fetchAverageBst();
-                                    fetchCurrentStreak();
-                                    fetchLongestStreak();
-                                    fetchMaxRunsPerDay();
-                                } else {
-                                    alert('Failed to delete row.');
-                                }
-                            });
-                        }
-                    };
-                    csvTableBody.appendChild(tr);
-                });
-            });
-        csvModal.style.display = 'block';
-        document.body.classList.add('modal-open');
-    }
-
-    editCsvBtn.onclick = openCsvModal;
-    closeCsvModal.onclick = function() {
-        csvModal.style.display = 'none';
-        document.body.classList.remove('modal-open');
-    };
-    window.onclick = function(event) {
-        if (event.target === csvModal) {
-            csvModal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-        }
-    };
-
-    addCsvRowBtn.onclick = function() {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td contenteditable="true"></td>
-            <td contenteditable="true"></td>
-            <td contenteditable="true"></td>
-            <td contenteditable="true"></td>
-            <td>
-                <button class="saveRowBtn">Save</button>
-                <button class="deleteRowBtn">Delete</button>
-            </td>
-        `;
-        // Save handler for new row
-        tr.querySelector('.saveRowBtn').onclick = function() {
-            const cells = tr.querySelectorAll('td');
-            const newRow = {
-                Pokemon: cells[0].textContent.trim(),
-                Location: cells[1].textContent.trim(),
-                Date: cells[2].textContent.trim(),
-                Notes: cells[3].textContent.trim()
-            };
-            fetch('/csv_add_row', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(newRow)
-            })
-            .then(response => response.json())
-            .then(res => {
-                if (res.success) {
-                    alert('Row added!');
-                    openCsvModal(); // Refresh table (will re-sort)
-                    fetchLeaderboardData();
-                    fetchLast10Pokemon();
-                    fetchLocationPercentages();
-                    fetchTotalPokemon();
-                    fetchAverageBst();
-                    fetchCurrentStreak();
-                    fetchLongestStreak();
-                    fetchMaxRunsPerDay();
-                } else {
-                    alert('Failed to add row.');
-                }
-            });
-        };
-        // Delete handler for new row (just remove from DOM)
-        tr.querySelector('.deleteRowBtn').onclick = function() {
-            tr.remove();
-        };
-        // Insert at the top of the table body
-        if (csvTableBody.firstChild) {
-            csvTableBody.insertBefore(tr, csvTableBody.firstChild);
-        } else {
-            csvTableBody.appendChild(tr);
-        }
-    };
-});
+// In DOMContentLoaded, add:
+fetchMaxRunsPerDay();
 
