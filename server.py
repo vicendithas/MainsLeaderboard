@@ -474,20 +474,45 @@ def unique_pokemon():
 
 @app.route("/config")
 def get_config():
-    # Only return the shiny_odds and volume fields for the frontend
+    # Determine game and shiny folder existence
+    game = config.get("game", "crystal")
+    shiny_gifs_folder = os.path.join(app.static_folder, "shiny_gifs", game)
+    shiny_gifs_exists = os.path.isdir(shiny_gifs_folder)
     return jsonify(
         {
+            "title": config.get("title", "Mains Leaderboard"),
+            "port": config.get("port", 8080),
             "shiny_odds": config.get("shiny_odds", 8192),
             "volume": config.get("volume", 0.5),
+            "game": game,
+            "shiny_gifs_exists": shiny_gifs_exists,
         }
     )
+
+
+def get_media_path(pokemon_name, shiny=False):
+    """Return the path to the media file for the given Pokémon and game."""
+    game_folder = config.get("game", "crystal")
+    extensions = [".gif", ".png", ".jpg", ".webp"]  # Add supported extensions
+    filename_base = sanitize_filename(pokemon_name)
+    if shiny:
+        shiny_folder = os.path.join(app.static_folder, "shiny_gifs", game_folder)
+        for ext in extensions:
+            path = os.path.join(shiny_folder, filename_base + ext)
+            if os.path.exists(path):
+                return shiny_folder, filename_base + ext
+    normal_folder = os.path.join(app.static_folder, "gifs", game_folder)
+    for ext in extensions:
+        path = os.path.join(normal_folder, filename_base + ext)
+        if os.path.exists(path):
+            return normal_folder, filename_base + ext
+    return None, None
 
 
 @app.route("/last_pokemon")
 def last_pokemon():
     rows = read_csv()
     if not rows:
-        # No entries, return 404
         return "", 404
 
     # Attach index for tie-breaking
@@ -502,14 +527,23 @@ def last_pokemon():
     rows.sort(key=lambda x: (x["_date_dt"], x["_csv_idx"]), reverse=True)
     last = rows[0]
     pokemon_name = last["Pokemon"]
-    gif_filename = sanitize_filename(pokemon_name) + ".gif"
-    gif_folder = os.path.join(app.static_folder, "gifs")
 
-    # If the GIF doesn't exist, return 404
-    if not os.path.exists(os.path.join(gif_folder, gif_filename)):
+    # Check for shiny (example: you may want to pass this from frontend)
+    shiny = False
+    folder, filename = get_media_path(pokemon_name, shiny=shiny)
+    if not folder or not filename:
         return "", 404
 
-    return send_from_directory(gif_folder, gif_filename)
+    return send_from_directory(folder, filename)
+
+
+@app.route("/pokemon_media/<pokemon_name>")
+def pokemon_media(pokemon_name):
+    shiny = request.args.get("shiny", "0") == "1"
+    folder, filename = get_media_path(pokemon_name, shiny=shiny)
+    if not folder or not filename:
+        return "", 404
+    return send_from_directory(folder, filename)
 
 
 @app.route("/play_streak")

@@ -153,6 +153,7 @@ button:hover {
 .pokemon-gif {
     width: 50px;  /* Adjust as needed */
     height: 50px; /* Adjust as needed */
+    object-fit: contain; /* Preserves aspect ratio */
     vertical-align: middle;
     margin-right: 10px; /* Space between image and text */
 }

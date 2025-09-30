@@ -39,6 +39,11 @@ You can edit the config.json file to change the leaderboard header and the port.
 
 Each time a GIF is loaded onto the page, it has a (by default) 1/8192 chance of being shiny. If this happens, you'll get a message on the page that "A shiny Pokémon appeared". If you want to change these odds, they can be changed in the config.json file.
 
+To choose the game's sprites/gifs that are used on the page, edit the "game" parameter in config.json. Valid options are:
+- crystal
+- emerald
+- stadium2
+
 
 # Update
 
