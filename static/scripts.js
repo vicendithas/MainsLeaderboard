@@ -45,13 +45,6 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;");
 }
 
-function sanitizeFilename(name) {
-    // Convert to lowercase
-	// replace spaces with underscores (ex. Mr. Mime)
-	// remove single quote (ex. Farfetch'd)
-    return name.toLowerCase().replace(/ /g, '_').replace(/'/g, '');
-}
-
 function getMediaPath(pokemonName, shinyCheckCallback) {
     let shiny = 0;
     if (shinyGifsExists && Math.floor(Math.random() * shinyOdds) === 0) {
