@@ -1,4 +1,4 @@
-{
+pokemon_bst = {
     "Bulbasaur": 318,
     "Ivysaur": 405,
     "Venusaur": 525,
@@ -719,5 +719,5 @@
     "Zygarde": 600,
     "Diancie": 600,
     "Hoopa": 600,
-    "Volcanion": 600
+    "Volcanion": 600,
 }
