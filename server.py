@@ -3,7 +3,6 @@ import csv
 import json
 import os
 import re
-import importlib
 from datetime import datetime
 
 from flask import Flask, render_template, request, jsonify, send_from_directory
@@ -52,12 +51,6 @@ for key, default_value in DEFAULT_CONFIG.items():
 if config_updated:
     with open("config.json", "w") as config_file:
         json.dump(config, config_file, indent=4)  # Added indent=4 for pretty formatting
-
-# # Conditional import based on config["game"]
-# if config.get("game") == "xy":
-#     pokemon_bst = importlib.import_module("bstgen6").pokemon_bst
-# else:
-#     pokemon_bst = importlib.import_module("bst").pokemon_bst
 
 if config.get("game") == "xy":
     from bstgen6 import pokemon_bst
