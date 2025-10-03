@@ -53,11 +53,16 @@ if config_updated:
     with open("config.json", "w") as config_file:
         json.dump(config, config_file, indent=4)  # Added indent=4 for pretty formatting
 
-# Conditional import based on config["game"]
+# # Conditional import based on config["game"]
+# if config.get("game") == "xy":
+#     pokemon_bst = importlib.import_module("bstgen6").pokemon_bst
+# else:
+#     pokemon_bst = importlib.import_module("bst").pokemon_bst
+
 if config.get("game") == "xy":
-    pokemon_bst = importlib.import_module("bstgen6").pokemon_bst
+    from bstgen6 import pokemon_bst
 else:
-    pokemon_bst = importlib.import_module("bst").pokemon_bst
+    from bst import pokemon_bst
 
 # Path to the CSV file
 CSV_FILE = "pokemon_usage.csv"
