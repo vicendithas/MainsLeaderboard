@@ -6,12 +6,13 @@ on:
       - 'v*.*.*'   # e.g., v1.0.0, v1.2.3, etc.
 
 permissions:
-  contents: write 
+  contents: write
 
 jobs:
   build:
     name: Build Windows EXE
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: self-hosted
     
     steps:
       - name: Check out repository
