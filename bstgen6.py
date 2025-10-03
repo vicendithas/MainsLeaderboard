@@ -1,4 +1,5 @@
 pokemon_bst = {
+    # Gen 1
     "Bulbasaur": 318,
     "Ivysaur": 405,
     "Venusaur": 525,
@@ -27,10 +28,10 @@ pokemon_bst = {
     "Raichu": 485,
     "Sandshrew": 300,
     "Sandslash": 450,
-    "Nidoran♀": 275,
+    "Nidoran-F": 275,
     "Nidorina": 365,
     "Nidoqueen": 505,
-    "Nidoran♂": 273,
+    "Nidoran-M": 273,
     "Nidorino": 365,
     "Nidoking": 505,
     "Clefairy": 323,
@@ -150,6 +151,7 @@ pokemon_bst = {
     "Dragonite": 600,
     "Mewtwo": 680,
     "Mew": 600,
+    # Gen 2
     "Chikorita": 318,
     "Bayleef": 405,
     "Meganium": 525,
@@ -250,6 +252,7 @@ pokemon_bst = {
     "Lugia": 680,
     "Ho-Oh": 680,
     "Celebi": 600,
+    # Gen 3
     "Treecko": 310,
     "Grovyle": 405,
     "Sceptile": 530,
@@ -385,6 +388,7 @@ pokemon_bst = {
     "Rayquaza": 680,
     "Jirachi": 600,
     "Deoxys": 600,
+    # Gen 4
     "Turtwig": 318,
     "Grotle": 405,
     "Torterra": 525,
@@ -492,6 +496,7 @@ pokemon_bst = {
     "Darkrai": 600,
     "Shaymin": 600,
     "Arceus": 720,
+    # Gen 5
     "Victini": 600,
     "Snivy": 308,
     "Servine": 413,
@@ -648,6 +653,7 @@ pokemon_bst = {
     "Keldeo": 580,
     "Meloetta": 600,
     "Genesect": 600,
+    # Gen 6
     "Chespin": 313,
     "Quilladin": 405,
     "Chesnaught": 530,
