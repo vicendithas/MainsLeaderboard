@@ -3,52 +3,23 @@ import csv
 import json
 import os
 import re
+import importlib
 from datetime import datetime
 
 from flask import Flask, render_template, request, jsonify, send_from_directory
 
 app = Flask(__name__, static_folder="static", template_folder="static/templates")
 
-# Import BST data
-from bst import pokemon_bst
-
-# Path to the CSV file
-CSV_FILE = "pokemon_usage.csv"
-
-
-def read_csv():
-    """Read the CSV_FILE and return a list of dictionaries for each row."""
-    rows = []
-    with open(CSV_FILE, mode="r", newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            # Ensure Notes field exists for backward compatibility
-            if "Notes" not in row:
-                row["Notes"] = ""
-            rows.append(row)
-    return rows
-
-
-def write_csv(rows):
-    """Write the given list of dictionaries to CSV_FILE."""
-    with open(CSV_FILE, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["Pokemon", "Location", "Date", "Notes"])
-        writer.writeheader()
-        writer.writerows(rows)
-
-
 # Load config and create config file with defaults if it doesn't exist
-# Write config options to file if they don't exist
-# Prints a mesasge and uses defaults if the config file is malformed
 CONFIG_FILE = "config.json"
 DEFAULT_CONFIG = {
     "title": "Mains Leaderboard",
     "port": 8080,
     "shiny_odds": 8192,
     "volume": 0.5,
+    "game": "crystal",
 }
 
-# Check if config file exists and load it, handling empty/malformed files
 config = {}
 if os.path.exists(CONFIG_FILE):
     try:
@@ -81,6 +52,36 @@ for key, default_value in DEFAULT_CONFIG.items():
 if config_updated:
     with open("config.json", "w") as config_file:
         json.dump(config, config_file, indent=4)  # Added indent=4 for pretty formatting
+
+# Conditional import based on config["game"]
+if config.get("game") == "xy":
+    pokemon_bst = importlib.import_module("bstgen6").pokemon_bst
+else:
+    pokemon_bst = importlib.import_module("bst").pokemon_bst
+
+# Path to the CSV file
+CSV_FILE = "pokemon_usage.csv"
+
+
+def read_csv():
+    """Read the CSV_FILE and return a list of dictionaries for each row."""
+    rows = []
+    with open(CSV_FILE, mode="r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Ensure Notes field exists for backward compatibility
+            if "Notes" not in row:
+                row["Notes"] = ""
+            rows.append(row)
+    return rows
+
+
+def write_csv(rows):
+    """Write the given list of dictionaries to CSV_FILE."""
+    with open(CSV_FILE, mode="w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["Pokemon", "Location", "Date", "Notes"])
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 # Serve index.html from the /static directory
