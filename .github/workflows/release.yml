@@ -13,7 +13,7 @@ jobs:
     name: Build Windows EXE
     runs-on: ubuntu-latest
     # runs-on: self-hosted
-    
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
