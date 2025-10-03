@@ -46,6 +46,7 @@ To choose the game's sprites/gifs that are used on the page, edit the "game" par
 - stadium2
 - emerald
 - bw2
+- xy
 
 
 # Update
