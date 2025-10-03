@@ -919,26 +919,33 @@ def csv_delete_row():
 
 
 if __name__ == "__main__":
-    # Retrieve primary IP address
-    import socket
+    try:
+        # Retrieve primary IP address
+        import socket
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("10.255.255.255", 1))
-    ip = s.getsockname()[0]
-    s.close()
-    print("MainsLeaderboard is running at:")
-    print()
-    print(
-        f"http://{ip}:{config['port']}"
-        + " | This link is accessible anywhere on your network"
-    )
-    print(
-        f"http://127.0.0.1:{config['port']}"
-        + " | This link is only accessible from your local machine"
-    )
-    print()
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("10.255.255.255", 1))
+        ip = s.getsockname()[0]
+        s.close()
+        print("MainsLeaderboard is running at:")
+        print()
+        print(
+            f"http://{ip}:{config['port']}"
+            + " | This link is accessible anywhere on your network"
+        )
+        print(
+            f"http://127.0.0.1:{config['port']}"
+            + " | This link is only accessible from your local machine"
+        )
+        print()
 
-    # Deploy web server
-    from waitress import serve
+        # Deploy web server
+        from waitress import serve
 
-    serve(app, host="0.0.0.0", port=config["port"], threads=100)
+        serve(app, host="0.0.0.0", port=config["port"], threads=100)
+    except Exception as e:
+        import traceback
+
+        print("\nAn error occurred:\n")
+        traceback.print_exc()
+        input("\nPress Enter to exit...")
